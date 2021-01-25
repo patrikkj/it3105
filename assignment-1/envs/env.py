@@ -16,8 +16,20 @@ class Environment:
         """
 
     @abstractmethod
-    def get_initial_state(self):
-        """Returns the initial state for this environment."""
+    def get_current_step(self):
+        """Returns the number of steps for the active episode."""
+
+    @abstractmethod
+    def get_observation_spec(self):
+        """Returns the specifications for the observation space."""
+
+    @abstractmethod
+    def get_action_spec(self):
+        """Returns the specifications for the action space."""
+
+    @abstractmethod
+    def get_legal_actions(self):
+        """Returns the legal actions in the current state."""
 
     @abstractmethod
     def reset(self):
@@ -26,4 +38,5 @@ class Environment:
     @abstractmethod
     def is_terminal(self):
         """Determines whether the given state is a terminal state."""
+
     
