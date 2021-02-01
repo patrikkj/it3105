@@ -24,6 +24,8 @@ class AbstractCritic:
 class CriticTable(AbstractCritic):
     def __init__(self, env, alpha=0.01, decay_rate=0.9, discount_rate=0.99):
         """
+        Har i oppgave å evaluere tilstander.
+
         Args:
             env:                    Environment, used to fetch state space specifications.
             alpha:                  Critic's learning rate.
@@ -49,17 +51,55 @@ class CriticTable(AbstractCritic):
         self.eligibility = {}
 
     def update_eligibility(self, state):
-        #print("critic_elig", len(self.eligibility))
         for state_, value in self.eligibility.items():
-            self.eligibility[state_] = self.discount_rate * self.decay_rate * value     # Eligibility decay
+            self.eligibility[state_] = self.discount_rate * self.decay_rate * value
         self.eligibility[state] = 1
 
     def update_value_func(self, error):
-        #print("critic_values", len(self.V))
         for state, value in self.eligibility.items():
             self.V[state] += value * self.alpha * error
 
-    def update_all(self, state, error, is_exploring):
-        #if not is_exploring:
+    def update_all(self, state, error):
+        self.update_eligibility(state)
+        self.update_value_func(error)
+
+
+class CriticNetwork(AbstractCritic):
+    def __init__(self, env, alpha=0.01, decay_rate=0.9, discount_rate=0.99):
+        """
+        Args:
+            env:                    Environment, used to fetch state space specifications.
+            alpha:                  Critic's learning rate.
+            decay_rate:             Trace decay rate (λ) (eligibility decay / decay for prev. states)
+            discount_rate:          Discount rate (𝛾) / future decay rate for depreciating future rewards.
+        """
+        self.env = env
+        self.V = tf.keras.model.Sequential([
+            tf.keras.layers.Input((5*5, )),
+            tf.keras.layers.Dense((5*5, )),
+            tf.keras.layers.Dense((5*5, )),
+            tf.keras.layers.Dense((5*5, )),
+        ])
+        self.V.compile(loss="mse", optimizer="adam", metrics=["accuracy"])
+
+               # Format:   state -> value
+        self.eligibility = {}
+        self.alpha = alpha
+        self.decay_rate = decay_rate
+        self.discount_rate = discount_rate
+
+    def __call__(self, r, s, s_next):
+        pass
+
+    def reset_eligibility(self):
+        pass
+
+    def update_eligibility(self, state):
+        pass
+
+    def update_value_func(self, error):
+        pass
+
+    def update_all(self, state, error):
         self.update_eligibility(state)
         self.update_value_func(error)

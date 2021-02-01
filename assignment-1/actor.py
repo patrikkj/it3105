@@ -4,6 +4,7 @@ from utils import SAP
 
 class Actor:
     """
+    Har i oppgave å bestemme nye actions.
     The actor manages interactions between a policy and an environment.
     The actor evaluates policies during training.
 
@@ -33,8 +34,6 @@ class Actor:
 
     def __call__(self, state):
         """Returns the actors' proposed action for a given state."""
-        adjusted_epsilon = self.epsilon * self.epsilon_decay ** self.episode
-        #print(adjusted_epsilon)
         # Fetch legal actions from environment
         legal_actions = self.env.get_legal_actions()
         saps = [SAP(state, action) for action in legal_actions]
@@ -43,11 +42,13 @@ class Actor:
             self.eligibility.setdefault(sap, 0)
 
         # Determine action based on policy
-        if (is_exploring := np.random.random() < adjusted_epsilon):
+        adjusted_epsilon = self.epsilon * self.epsilon_decay ** self.episode
+        if np.random.random() < adjusted_epsilon:
             action = legal_actions[np.random.choice(len(legal_actions))]
         else:
+            #action = np.random.choice(saps, weights=[self.policy[sap] for sap in saps]).action
             action = max(saps, key=lambda sap: self.policy.get(sap, 0)).action
-        return action, is_exploring
+        return action
 
     def set_episode(self, episode):
         self.episode = episode
@@ -56,17 +57,14 @@ class Actor:
         self.eligibility = {}
 
     def update_eligibility(self, sap):
-        #print("actor_elig", len(self.eligibility))
         for sap_, value in self.eligibility.items():
             self.eligibility[sap_] = self.decay_rate * self.discount_rate * value
         self.eligibility[sap] = 1
 
-    def update_weights(self, error):
-        #print("actor_policy", len(self.policy))
-        for sap, value in self.eligibility.items():
-            self.policy[sap] += self.alpha * error * value
+    def update_policy(self, error):
+        for sap, elig in self.eligibility.items():
+            self.policy[sap] += self.alpha * error * elig
 
-    def update_all(self, sap, error, is_exploring):
-        #if not is_exploring:
+    def update_all(self, sap, error):
         self.update_eligibility(sap)
-        self.update_weights(error)
+        self.update_policy(error)

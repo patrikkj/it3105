@@ -12,18 +12,14 @@ DIAMOND_DIRECTIONS = [(-1, 1), (-1, 0), (0, -1), (0, 1), (1, 0), (-1, 1)]
 class BoardType(Enum):
     DIAMOND = auto()
     TRIANGLE = auto()
-    # DIAMOND_FULL kanskje?
-
 
 # INITIAL BOARD 5x5
-
-
 # Configs
 # Triangles 4-8
 # Diamonds 3-6
 
 
-tri_indices = gen_triangular_indices(3)
+#tri_indices = gen_triangular_indices(3)
 
 
 def gen_triangular_indices(n):
@@ -123,7 +119,7 @@ class PegSolitaire(env.Environment):
 
     def valid_actions(self):
         actions = []
-        for cell in self.cells:
+        for cell in self.board.cells.values():
             cell_actions = self.cell_actions(cell)
             for action in cell_actions:
                 actions.append((cell, action))
@@ -133,24 +129,24 @@ class PegSolitaire(env.Environment):
         actions = []
         for direction in self.directions:
             row_, col_ = self.adjacent_cell(cell, direction)
-            if (row_, col_) in self.cells:
-                if self.cells[(row_, col_)].has_peg:
-                    row_, col_ = self.adjacent_cell(self.cells[(row_, col_)], direction)
-                    if (row_, col_) in self.cells:
-                        if not self.cells[(row_, col_)].has_peg:
+            if (row_, col_) in self.board.cells:
+                if self.board.cells[(row_, col_)].has_peg:
+                    row_, col_ = self.adjacent_cell(self.board.cells[(row_, col_)], direction)
+                    if (row_, col_) in self.board.cells:
+                        if not self.board.cells[(row_, col_)].has_peg:
                             actions.append(direction)
         return actions
 
     def move(self, cell, direction):
         cell.has_peg = not cell.has_peg
         row_, col_ = self.adjacent_cell(cell, direction)
-        self.cells[row_, col_].has_peg = not self.cells[row_, col_].has_peg
-        row_, col_ = self.adjacent_cell(self.cells[(row_, col_)], direction)
-        self.cells[row_, col_].has_peg = not self.cells[row_, col_].has_peg
+        self.board.cells[row_, col_].has_peg = not self.board.cells[row_, col_].has_peg
+        row_, col_ = self.adjacent_cell(self.board.cells[(row_, col_)], direction)
+        self.board.cells[row_, col_].has_peg = not self.board.cells[row_, col_].has_peg
         return self
 
     def adjacent_cell(self, cell, direction):
-        row, col = cell.row, cell.col
+        row, col = cell.row, cell.column
         return row + direction[0], col + direction[1]
 
     def __enter__(self):
@@ -167,5 +163,8 @@ def gen_diamond_indices(n):
 
 
 def main():
-    tri_indices = gen_triangular_indices(5)
+    #tri_indices = gen_triangular_indices(5)
     plt.scatter(*list(zip(*tri_indices)))
+
+board = PegSolitaire()
+print(board.valid_actions())

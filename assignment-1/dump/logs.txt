@@ -1,0 +1,213 @@
+
+
+# --- 5x5 diamond ---
+
+#        88746192 function calls (88746162 primitive calls) in 39.219 seconds
+#
+#   Ordered by: internal time
+#
+#   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+#  2127542   11.934    0.000   18.786    0.000 peg_kernel.py:53(_generate_moves)
+#   221290    9.521    0.000    9.531    0.000 actor.py:62(update_weights)
+#   221290    2.938    0.000    2.951    0.000 actor.py:57(update_eligibility)
+# 18128836    2.485    0.000    3.272    0.000 types.py:171(__get__)
+# 18128836    2.389    0.000    5.661    0.000 utils.py:24(vector)
+#  4677664    0.885    0.000    0.885    0.000 {method 'setdefault' of 'dict' objects}
+#   221290    0.866    0.000   19.506    0.000 peg_kernel.py:75(step)
+#  6013540    0.825    0.000    1.136    0.000 index_tricks.py:585(__next__)
+# 18128836    0.786    0.000    0.786    0.000 enum.py:689(value)
+
+
+
+#
+#         39359212 function calls (39359126 primitive calls) in 27.814 seconds
+#
+#   Ordered by: internal time
+#
+#   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+#   204855    8.678    0.000    8.688    0.000 actor.py:62(update_weights)
+#  1783516    3.021    0.000    8.991    0.000 peg_kernel.py:44(_generate_moves)
+#   204855    2.622    0.000    2.635    0.000 actor.py:57(update_eligibility)
+#   204855    0.883    0.000   10.692    0.000 peg_kernel.py:75(step)
+#   214855    0.856    0.000    3.570    0.000 filters.py:639(_correlate_or_convolve)
+#   214855    0.850    0.000    0.850    0.000 {built-in method scipy.ndimage._nd_image.correlate}
+#  3956742    0.792    0.000    0.792    0.000 {method 'setdefault' of 'dict' objects}
+#  2857791    0.776    0.000    0.776    0.000 peg_kernel.py:51(<genexpr>)
+#   204855    0.635    0.000    0.643    0.000 critic.py:56(update_value_func)
+#  1289130    0.535    0.000    0.535    0.000 {method 'nonzero' of 'numpy.ndarray' objects}
+#   409710    0.528    0.000    0.528    0.000 {method 'uniform' of 'numpy.random.mtrand.RandomState' objects}
+#  
+
+
+
+#  --- 7x7 diamond ---
+
+#         314047530 function calls (314047474 primitive calls) in 158.876 seconds
+#
+#   Ordered by: internal time
+#
+#   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+#   437966   51.573    0.000   51.594    0.000 actor.py:62(update_weights)
+#  6347314   45.681    0.000   70.831    0.000 peg_kernel.py:53(_generate_moves)
+#   437966   16.354    0.000   16.379    0.000 actor.py:57(update_eligibility)
+# 70457834    9.283    0.000   12.148    0.000 types.py:171(__get__)
+# 70457834    8.868    0.000   21.016    0.000 utils.py:24(vector)
+# 22398300    2.904    0.000    4.043    0.000 index_tricks.py:585(__next__)
+# 70457834    2.865    0.000    2.865    0.000 enum.py:689(value)
+# 13550560    2.640    0.000    2.640    0.000 {method 'setdefault' of 'dict' objects}
+#   437966    2.475    0.000    2.494    0.000 critic.py:56(update_value_func)
+#   437966    1.856    0.000   72.570    0.000 peg_kernel.py:75(step)
+#   437966    1.340    0.000   11.160    0.000 actor.py:34(__call__)
+#  6347314    1.324    0.000    1.324    0.000 {built-in method __new__ of type object at 0x1023f27b0}
+# 22398300    1.139    0.000    1.139    0.000 {built-in method builtins.next}
+ 
+
+#          90805148 function calls (90805036 primitive calls) in 93.989 seconds
+#
+#   Ordered by: internal time
+#
+#   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+#   399716   43.252    0.000   43.271    0.000 actor.py:62(update_weights)
+#   399716   13.818    0.000   13.842    0.000 actor.py:57(update_eligibility)
+#  5483124    5.996    0.000   18.775    0.000 peg_kernel.py:44(_generate_moves)
+#  7531704    2.679    0.000    2.679    0.000 peg_kernel.py:51(<genexpr>)
+# 11745680    2.359    0.000    2.359    0.000 {method 'setdefault' of 'dict' objects}
+#   399716    2.079    0.000    2.095    0.000 critic.py:56(update_value_func)
+#   399716    1.781    0.000   22.559    0.000 peg_kernel.py:75(step)
+#   409716    1.734    0.000    1.734    0.000 {built-in method scipy.ndimage._nd_image.correlate}
+#   409716    1.654    0.000    6.909    0.000 filters.py:639(_correlate_or_convolve)
+#  5483124    1.346    0.000    1.346    0.000 {built-in method __new__ of type object at 0x100c9e7b0}
+#   399716    1.211    0.000    8.011    0.000 actor.py:34(__call__)
+#  2458296    1.143    0.000    1.143    0.000 {method 'nonzero' of 'numpy.ndarray' objects}
+#  2028581    1.002    0.000    1.002    0.000 {built-in method numpy.array}
+#   799432    0.997    0.000    0.997    0.000 {method 'uniform' of 'numpy.random.mtrand.RandomState' objects}
+ 
+
+#         66247006 function calls (66246894 primitive calls) in 87.727 seconds
+#
+#   Ordered by: internal time
+#
+#   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+#   403485   43.437    0.000   43.456    0.000 actor.py:62(update_weights)
+#   403485   14.311    0.000   14.334    0.000 actor.py:57(update_eligibility)
+#  5423216    4.168    0.000   11.930    0.000 peg_kernel.py:56(_generate_moves)
+# 11633402    2.385    0.000    2.385    0.000 {method 'setdefault' of 'dict' objects}
+#   403485    2.118    0.000    2.134    0.000 critic.py:56(update_value_func)
+#   413485    1.859    0.000    7.108    0.000 filters.py:639(_correlate_or_convolve)
+#   413485    1.737    0.000    1.737    0.000 {built-in method scipy.ndimage._nd_image.correlate}
+#   403485    1.657    0.000   15.796    0.000 peg_kernel.py:85(step)
+#  5423216    1.300    0.000    1.300    0.000 {built-in method __new__ of type object at 0x10250a7b0}
+#   403485    1.219    0.000    7.801    0.000 actor.py:34(__call__)
+#  2047427    1.019    0.000    1.019    0.000 {built-in method numpy.array}
+#   806970    0.967    0.000    0.967    0.000 {method 'uniform' of 'numpy.random.mtrand.RandomState' objects}
+#   403485    0.937    0.000    0.955    0.000 critic.py:51(update_eligibility)
+#    10000    0.853    0.000   87.717    0.009 agent.py:20(episode)
+#   403485    0.719    0.000    2.457    0.000 actor.py:38(<listcomp>)
+#  5423216    0.542    0.000    1.841    0.000 <string>:1(__new__)
+#   413488    0.540    0.000    0.540    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+#   413485    0.527    0.000    0.527    0.000 {method 'nonzero' of 'numpy.ndarray' objects}
+#   413485    0.465    0.000    1.933    0.000 _ni_support.py:73(_get_output)
+#  3917802    0.442    0.000    0.783    0.000 actor.py:48(<lambda>)
+#   323667    0.435    0.000    1.218    0.000 {built-in method builtins.max}
+#  1220456    0.425    0.000    0.425    0.000 peg_kernel.py:78(_set_cell)
+#   413485    0.391    0.000    1.242    0.000 _dtype.py:321(_name_get)
+#   403485    0.389    0.000    1.595    0.000 critic.py:40(__call__)
+#  3917802    0.340    0.000    0.340    0.000 {method 'get' of 'dict' objects}
+#    79826    0.268    0.000    0.268    0.000 {method 'choice' of 'numpy.random.mtrand.RandomState' objects}
+#   413486    0.226    0.000    0.226    0.000 {built-in method numpy.zeros}
+#   413485    0.197    0.000    0.488    0.000 numerictypes.py:360(issubdtype)
+#   423486    0.176    0.000    0.176    0.000 {method 'copy' of 'numpy.ndarray' objects}
+#   826970    0.175    0.000    0.270    0.000 numerictypes.py:286(issubclass_)
+#   413485    0.172    0.000    0.660    0.000 _dtype.py:307(_name_includes_bit_suffix)
+#  1240455    0.164    0.000    0.311    0.000 {built-in method builtins.isinstance}
+#  1240456    0.158    0.000    0.426    0.000 _asarray.py:14(asarray)
+
+
+#         63543744 function calls (63543632 primitive calls) in 92.774 seconds
+#
+#   Ordered by: internal time
+#
+#   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+#   402721   46.952    0.000   46.971    0.000 actor.py:62(update_weights)
+#   402721   15.341    0.000   15.363    0.000 actor.py:57(update_eligibility)
+#   402721    3.109    0.000   14.946    0.000 peg_kernel.py:85(step)
+# 12417434    2.507    0.000    2.507    0.000 {method 'setdefault' of 'dict' objects}
+#  5815996    2.225    0.000    2.225    0.000 {built-in method __new__ of type object at 0x100fee7b0}
+#   412721    2.136    0.000    9.614    0.000 peg_kernel.py:58(_generate_moves)
+#   402721    2.123    0.000    2.139    0.000 critic.py:56(update_value_func)
+#   412721    1.746    0.000    1.746    0.000 {built-in method scipy.ndimage._nd_image.correlate}
+#   412721    1.580    0.000    6.812    0.000 filters.py:639(_correlate_or_convolve)
+#   402721    1.268    0.000    9.065    0.000 actor.py:34(__call__)
+#  2043607    1.023    0.000    1.023    0.000 {built-in method numpy.array}
+#   805442    0.988    0.000    0.988    0.000 {method 'uniform' of 'numpy.random.mtrand.RandomState' objects}
+#   402721    0.944    0.000    0.963    0.000 critic.py:51(update_eligibility)
+#    10000    0.886    0.000   92.763    0.009 agent.py:20(episode)
+#   402721    0.770    0.000    3.462    0.000 actor.py:38(<listcomp>)
+#  5815996    0.572    0.000    2.796    0.000 <string>:1(__new__)
+# 
+
+
+
+#         64123495 function calls (64123383 primitive calls) in 94.796 seconds
+#
+#   Ordered by: internal time
+#
+#   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+#   402504   48.375    0.000   48.394    0.000 actor.py:62(update_weights)
+#   402504   15.642    0.000   15.665    0.000 actor.py:57(update_eligibility)
+#   402504    3.025    0.000   14.999    0.000 peg_kernel.py:85(step)
+# 12625184    2.522    0.000    2.522    0.000 {method 'setdefault' of 'dict' objects}
+#  5920088    2.377    0.000    2.377    0.000 {built-in method __new__ of type object at 0x1007be7b0}
+#   402504    2.120    0.000    2.136    0.000 critic.py:56(update_value_func)
+#   412504    2.075    0.000    9.694    0.000 peg_kernel.py:56(_generate_moves)
+#   412504    1.773    0.000    1.773    0.000 {built-in method scipy.ndimage._nd_image.correlate}
+#   412504    1.601    0.000    6.962    0.000 filters.py:639(_correlate_or_convolve)
+#   402504    1.289    0.000    9.325    0.000 actor.py:34(__call__)
+#  2042522    1.019    0.000    1.019    0.000 {built-in method numpy.array}
+#   805008    0.981    0.000    0.981    0.000 {method 'uniform' of 'numpy.random.mtrand.RandomState' objects}
+#   402504    0.941    0.000    0.959    0.000 critic.py:51(update_eligibility)
+#    10000    0.868    0.000   94.785    0.009 agent.py:20(episode)
+#   402504    0.774    0.000    3.626    0.000 actor.py:38(<listcomp>)
+#   412507    0.578    0.000    0.578    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+#  5920088    0.576    0.000    2.953    0.000 <string>:1(__new__)
+#   412504    0.535    0.000    0.535    0.000 {method 'nonzero' of 'numpy.ndarray' objects}
+#  4405039    0.490    0.000    0.863    0.000 actor.py:48(<lambda>)
+#   322891    0.470    0.000    1.333    0.000 {built-in method builtins.max}
+#   412504    0.468    0.000    1.998    0.000 _ni_support.py:73(_get_output)
+#  1217513    0.427    0.000    0.427    0.000 peg_kernel.py:78(_set_cell)
+#   402504    0.412    0.000    1.632    0.000 critic.py:40(__call__)
+#   412504    0.402    0.000    1.307    0.000 _dtype.py:321(_name_get)
+#  4405039    0.373    0.000    0.373    0.000 {method 'get' of 'dict' objects}
+#    79621    0.271    0.000    0.271    0.000 {method 'choice' of 'numpy.random.mtrand.RandomState' objects}
+#   412505    0.222    0.000    0.222    0.000 {built-in method numpy.zeros}
+#   412504    0.195    0.000    0.484    0.000 numerictypes.py:360(issubdtype)
+#
+
+
+
+
+
+
+
+
+
+
+
+
+#         25389523 function calls (25389437 primitive calls) in 22.268 seconds
+#
+#   Ordered by: internal time
+#
+#   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+#   199421    8.172    0.000    8.181    0.000 actor.py:62(update_weights)
+#   199421    2.369    0.000    2.380    0.000 actor.py:57(update_eligibility)
+#   199421    1.084    0.000    6.468    0.000 peg_kernel.py:85(step)
+#   209421    0.933    0.000    4.426    0.000 peg_kernel.py:58(_generate_moves)
+#   209421    0.796    0.000    0.796    0.000 {built-in method scipy.ndimage._nd_image.correlate}
+#   209421    0.774    0.000    3.251    0.000 filters.py:639(_correlate_or_convolve)
+#  3843022    0.682    0.000    0.682    0.000 {method 'setdefault' of 'dict' objects}
+#   199421    0.618    0.000    0.626    0.000 critic.py:56(update_value_func)
+#  1027107    0.484    0.000    0.484    0.000 {built-in method numpy.array}
+#   398842    0.474    0.000    0.474    0.000 {method 'uniform' of 'numpy.random.mtrand.RandomState' objects}
+#   199421    0.474    0.000    2.661    0.000 actor.py:34(__call__)
+#
