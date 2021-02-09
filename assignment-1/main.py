@@ -5,11 +5,11 @@ from agent import ActorCriticAgent
 from critic import CriticTable
 from peg_kernel import PegSolitaire
 
-N_EPISODES = 1000
+N_EPISODES = 2000
 
 peg_params = {
     "board_type": "diamond",
-    "board_size": 5,
+    "board_size": 4,
     "holes": [(2, 1)],
 }
 
@@ -34,7 +34,7 @@ def on_episode_end(agent, episode):
     series["n_pegs_left"] = agent.env.get_pegs_left()
     episode_logs[episode] = series
 
-stepZ_logs = {}
+step_logs = {}
 def on_step_end(agent, step):
     series = pd.Series()
     series["board"] = agent.env.board.copy()

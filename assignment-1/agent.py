@@ -33,10 +33,10 @@ class ActorCriticAgent(Agent):
         self.actor.set_episode(ep)
 
         # Initialize environment and fetch initial state
-        self.env.reset()
-        state = self.env.get_observation()
-        action = self.actor(state)
-        sap = SAP(state, action)
+        self.env.reset()                        # Note: The same hole is applicable for each episode
+        state = self.env.get_observation()      # Format: bitstring. See peg_kernel
+        action = self.actor(state)              
+        sap = SAP(state, action)                
 
         step = 0
         while not self.env.is_terminal():
