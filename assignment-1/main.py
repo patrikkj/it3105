@@ -4,8 +4,9 @@ from actor import Actor
 from agent import ActorCriticAgent
 from critic import CriticTable
 from peg_kernel import PegSolitaire
+from plotpegs import plot
 
-N_EPISODES = 1000
+N_EPISODES = 20
 
 peg_params = {
     "board_type": "diamond",
@@ -34,7 +35,7 @@ def on_episode_end(agent, episode):
     series["n_pegs_left"] = agent.env.get_pegs_left()
     episode_logs[episode] = series
 
-stepZ_logs = {}
+step_logs = {}
 def on_step_end(agent, step):
     series = pd.Series()
     series["board"] = agent.env.board.copy()
@@ -50,7 +51,19 @@ def main():
         actor = Actor(environment, **actor_params)
         agent = ActorCriticAgent(environment, actor, critic)
         agent.set_callbacks(on_episode_end=on_episode_end)
+
+        #run
         agent.run(N_EPISODES, render=False, render_steps=False)
+
+        #plot episode (x), pegs left (y)
+        peg_left_list = []
+        for ep in range(len(episode_logs)):
+            serie = episode_logs.get(ep)
+            peg_count = serie.get("n_pegs_left")
+            peg_left_list.append((ep, peg_count))
+        
+        plot(peg_left_list)
+
         print(episode_logs)
 
 def debug():
