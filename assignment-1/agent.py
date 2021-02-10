@@ -58,6 +58,7 @@ class ActorCriticAgent(Agent):
             # Callbacks
             if render_steps:
                 self.env.render()
+
             if self.on_step_end:
                 self.on_step_end(self, ep, step)
             step += 1

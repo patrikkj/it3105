@@ -46,8 +46,33 @@ class PegSolitaire:
         self.render()
 
     def _generate_moves(self):
+        # Applies the convolution to the entire board.
+        # For triangular board the upper right is masked with ones to prevent generation of moves ending in this quadrant.
+        # The board is padded with ones with a radius of 2 to prevent pegs from jumping out of the board.
+        # This is also to ensure that the convolution is defined along the boards' edges.
         conv = ndimage.convolve(self.board + self._mask, kernel, mode="constant", cval=1)
+
+        # Flips all bits in the resulting convolution which correspond to edges.
         conv = np.bitwise_xor(conv, edge_mask)
+
+        # ANDs the convolved board with the bitpattern required to move in a specific direction.
+        # Shapes: conv:     (n, n, 1)
+        # dm:               (1, 1, |directions|)
+        # conv & dm:        (n, n, |directions|)
+
+        # zip(*iterable) functionality:
+        #    [
+        #      [1, 1, 4, 5],
+        #      [2, 5, 3, 3],
+        #      [2, 2, 3, 5],
+        #    ]
+        # is converterd to:
+        #    [  x  y  direction
+        #      [1, 2, 2],
+        #      [1, 2, 2],
+        #      [1, 2, 2],
+        #      [1, 2, 2],
+        #    ]
         return zip(*(np.bitwise_and(conv[..., None], self.dm) == self.dm).nonzero())
         
     def _set_cell(self, vector, value=0):
@@ -144,6 +169,11 @@ class PegSolitaire:
         """Support with-statement for the environment. """
         return False
 
+    @staticmethod
+    def decode_state(state):
+        """Decodes from binary to a vector-like state representation."""
+        return np.fromstring(state, dtype=bool)
+
 
 
 def print_bin_matrix(matrix):
@@ -174,8 +204,10 @@ t1 = time.perf_counter()
 # print(bin(conv[2, 2]))
 
 # conv_list2 = conv.tolist()
-# for row in conv_list2:
-#    print([f"{x:018b}" for x in row])
+def print_bin_matrix(matrix):
+    for row in matrix:
+        print([f"{x:018b}" for x in row])
+        
 """
 arr = np.array([direction.vector for direction in TRIANGE_DIRECTIONS])
 board = np.tri(5, dtype=int)

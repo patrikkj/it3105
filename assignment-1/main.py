@@ -1,8 +1,9 @@
 import pandas as pd
+import graphics
 
 from actor import Actor
 from agent import ActorCriticAgent
-from critic import CriticTable
+from critic import CriticTable, CriticNetwork
 from peg_kernel import PegSolitaire
 from plotpegs import plot
 
@@ -18,6 +19,13 @@ critic_table_params = {
     "alpha": 0.3, 
     "decay_rate": 0.9, 
     "discount_rate": 0.99, 
+}
+
+critic_nn_params = {
+    "layer_dims": (15, 20, 30, 5, 1), 
+    "alpha": 1e-3, 
+    "decay_rate": 1e-3, 
+    "discount_rate": 1e-3
 }
 
 actor_params = {
@@ -54,7 +62,10 @@ def on_episode_end(agent, episode):
 def main():
     with PegSolitaire(**peg_params) as environment:
         critic = CriticTable(environment, **critic_table_params)
+        #critic = CriticNetwork(environment, **critic_nn_params)
         actor = Actor(environment, **actor_params)
+
+        # Configure agent
         agent = ActorCriticAgent(environment, actor, critic)
         agent.set_callbacks(on_episode_end=on_episode_end, on_step_end=on_step_end)
 
@@ -91,9 +102,42 @@ def debug():
 
 main()
 
-critic_nn_params = {
-    "layer_dims": (15, 20, 30, 5, 1), 
-    "alpha": 1e-3, 
-    "decay_rate": 1e-3, 
-    "discount_rate": 1e-3
+
+
+
+step_logs = {
+    (1, 1): {
+        "board": [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1],
+        "n_pegs_left": 8
+    },
+    (1, 2): {
+        "board": [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1],
+        "n_pegs_left": 8
+    },
+    (1, 3): {
+        "board": [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1],
+        "n_pegs_left": 8
+    },
+    (1, 4): {
+        "board": [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1],
+        "n_pegs_left": 8
+    },
+
+    (2, 1): {
+        "board": [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1],
+        "n_pegs_left": 8
+    },
+    (2, 2): {
+        "board": [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1],
+        "n_pegs_left": 8
+    },
+    (2, 3): {
+        "board": [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1],
+        "n_pegs_left": 8
+    },
+    (2, 4): {
+        "board": [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1],
+        "n_pegs_left": 8
+    }
 }
+
