@@ -59,7 +59,7 @@ class ActorCriticAgent(Agent):
             if render_steps:
                 self.env.render()
             if self.on_step_end:
-                self.on_step_end(self, step)
+                self.on_step_end(self, ep, step)
             step += 1
         
         # Callbacks
@@ -68,17 +68,15 @@ class ActorCriticAgent(Agent):
         if self.on_episode_end:
             self.on_episode_end(self, ep)
 
-        #else:
-        #    tot_pegs = self.env._board.sum()
-        #    cur_pegs = self.env.get_pegs_left()
-        #    print(f"[{'#'*int(100*((tot_pegs-cur_pegs+1)/tot_pegs)):<100}]")
-
+        # Some prinnting :)
         if self.env.get_pegs_left() == 1:
             print(" -------------- WIN!!! -------------- ")
         else:
             print(f"Remaining: {self.env.get_pegs_left()}")
 
-        #print(f"Episode {ep}, Pegs left: {self.env.get_pegs_left()}")
+        #else:
+        #    tot_pegs = self.env._board.sum()
+        #    cur_pegs = self.env.get_pegs_left()
+        #    print(f"[{'#'*int(100*((tot_pegs-cur_pegs+1)/tot_pegs)):<100}]")
 
-    
-    
+        #print(f"Episode {ep}, Pegs left: {self.env.get_pegs_left()}")

@@ -28,20 +28,26 @@ actor_params = {
     "epsilon_decay": 0.9995
 }
 
-episode_logs = {}
+
+step_logs = []
+def on_step_end(agent, episode, step):
+    series = {}
+    series["episode"] = episode
+    series["step"] = step
+    series["board"] = agent.env.board.copy()
+    series["n_pegs_left"] = agent.env.get_pegs_left()
+    series["peg_move_direction"] = agent.env._peg_move_direction
+    series["peg_start_position"] = agent.env._peg_start_position
+    series["peg_end_position"] = agent.env._peg_end_position
+    step_logs.append(series)
+
+episode_logs = []
 def on_episode_end(agent, episode):
-    series = pd.Series()
+    series = {}
+    series["episode"] = episode
     series["board"] = agent.env.board.copy()
     series["n_pegs_left"] = agent.env.get_pegs_left()
-    episode_logs[episode] = series
-
-step_logs = {}
-def on_step_end(agent, step):
-    series = pd.Series()
-    series["board"] = agent.env.board.copy()
-    series["n_pegs_left"] = agent.env.get_pegs_left()
-    step_logs[step] = series
-
+    episode_logs.append(series)
 
 
 # decay: '5x5': 0.99, '6x6': 0.99, '7x7': 0.9995
@@ -50,12 +56,22 @@ def main():
         critic = CriticTable(environment, **critic_table_params)
         actor = Actor(environment, **actor_params)
         agent = ActorCriticAgent(environment, actor, critic)
-        agent.set_callbacks(on_episode_end=on_episode_end)
+        agent.set_callbacks(on_episode_end=on_episode_end, on_step_end=on_step_end)
 
-        #run
+        # Run experiments
         agent.run(N_EPISODES, render=False, render_steps=False)
 
-        #plot episode (x), pegs left (y)
+        # Collect logs
+        df_episodes = pd.DataFrame(episode_logs)
+        df_steps = pd.DataFrame(step_logs)
+
+        print("DF_EPISODES")
+        print(df_episodes)
+        
+        print("DF_STEPS")
+        print(df_steps)
+
+        """
         peg_left_list = []
         for ep in range(len(episode_logs)):
             serie = episode_logs.get(ep)
@@ -65,6 +81,7 @@ def main():
         plot(peg_left_list)
 
         print(episode_logs)
+        """
 
 def debug():
     import cProfile

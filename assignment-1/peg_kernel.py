@@ -74,6 +74,11 @@ class PegSolitaire:
         self._set_cell(vector + direction, value=0)
         self._set_cell(vector + 2 * direction, value=1)
 
+        # Cache previous move
+        self._peg_start_position = vector
+        self._peg_end_position = vector + 2 * direction
+        self._peg_move_direction = direction
+
         # Determine if terminal state
         self._actions = tuple(self._generate_moves())
         self._is_terminal = len(self._actions) == 0
@@ -139,6 +144,11 @@ class PegSolitaire:
         """Support with-statement for the environment. """
         return False
 
+
+
+def print_bin_matrix(matrix):
+    for row in matrix:
+        print([f"{x:018b}" for x in row])
 
 
 
