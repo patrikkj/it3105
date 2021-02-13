@@ -96,10 +96,6 @@ class PegSolitaire(env.Environment):
         """
         a = 1
         return (1, 2, 3), 10
-        
-    def get_current_step(self):
-        """Returns the number of steps for the active episode."""
-        pass
 
     def reset(self):
         """Resets the environment."""

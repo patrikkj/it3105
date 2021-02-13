@@ -77,25 +77,17 @@ class CriticNetwork(AbstractCritic):
             layer_dims:             Number of units within the models' hidden layers.
         """
         self.env = env
-        self.layer_dims = layer_dims
-        self.model = self._build_model()
-        self._eligibility = [tf.Variable(tf.zeros_like(layer)) for layer in self.model.trainable_weights].copy()
-        self.eligibility = self._eligibility.copy()
         self.alpha = alpha
         self.decay_rate = decay_rate
         self.discount_rate = discount_rate
 
-    def __call__(self, r, s, s_next):
+        # Build model
+        self.layer_dims = layer_dims
+        self.model = self._build_model()
+        self.eligibility = [tf.Variable(tf.zeros_like(weights)) for weights in self.model.trainable_weights]
 
-        #####################
-        ### TODO ###
-        # 1. Fix state representation hashable, see if model runs
-        # 2. Fix backpropagation decay
-        decoded_state = self.env.decode_state(s)
-        return self.model(decoded_state)
-        #ts = tf.convert_to_tensor(s)
-        #tensor_output = self.model(tf.reshape(ts, shape=(1, ts.shape[0])))
-        #return tensor_output.numpy().ravel()[0]
+    def __call__(self, r, s, s_next):
+        return self.model(tf.reshape(tf.convert_to_tensor(s), shape=(1, -1)))
 
     def td_error(self, r, s, s_next):
         """Returns the critics' evaluation of a given state (TD error)."""
@@ -105,23 +97,23 @@ class CriticNetwork(AbstractCritic):
 
     def _build_model(self):
         model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Input(shape=tuple(self.env.get_observation_spec())))
+        model.add(tf.keras.layers.Input(shape=len(self.env.get_observation())))
         for units in self.layer_dims:
             model.add(tf.keras.layers.Dense(units, activation="relu"))
-        model.compile(optimizer='adam', loss='mse', metrics=['mse'])
-        model.summary()
+        optimizer = tf.keras.optimizers.Adam(learning_rate=self.alpha)
+        model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
         return model
 
     def reset_eligibility(self):
-        self.eligibility = self._eligibility.copy()
+        self.eligibility = [tf.Variable(tf.zeros_like(weights)) for weights in self.model.trainable_weights]
 
     def update_eligibility(self, state):
-        ts = self.convert_to_tensor(state)
+        tensor = tf.convert_to_tensor(state)
         weights = self.model.trainable_weights
 
-        # Injection wrapper which records operations such that gradients can be calculated
+        # Wraps tf.ops to record operations such that gradients can be calculated
         with tf.GradientTape() as tape: 
-            value = self.model(tf.reshape(ts, shape=(1, len(ts)))) 
+            value = self.model(tf.reshape(tensor, shape=(1, -1)))
         gradients = tape.gradient(value, weights)
 
         # Update eligibility traces
@@ -131,8 +123,16 @@ class CriticNetwork(AbstractCritic):
 
     def update_value_func(self, error):
         weights = self.model.trainable_weights
-        weight_adjustment = [tf.math.multiply(self.eligibility[i], self.alpha, error) for i in range(len(weights))]
+        error = tf.reshape(error, -1)
+        weight_adjustment = [self.eligibility[i] * error for i in range(len(weights))]
         self.model.optimizer.apply_gradients(zip(weight_adjustment, weights))
+
+        # before_weights = [w.numpy() for w in weights]
+        # after_weights = [w.numpy() for w in weights]
+        # diffs = [np.abs(w1 - w2).sum() for w1, w2 in zip(before_weights, after_weights)]
+        # print(error)
+        #print(sum(diffs))
+
 
     def update_all(self, state, error):
         self.update_eligibility(state)

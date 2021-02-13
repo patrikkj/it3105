@@ -1,11 +1,9 @@
-from abc import abstractmethod
 from utils import SAP
+import tensorflow as tf
+import numpy as np
 
-class Agent:
-    pass
 
-
-class ActorCriticAgent(Agent):
+class ActorCriticAgent:
     def __init__(self, env, actor, critic):
         self.env = env
         self.actor = actor
@@ -15,18 +13,17 @@ class ActorCriticAgent(Agent):
         self.on_episode_end = None
         self.on_step_end = None
 
-    def set_callbacks(self, on_episode_end=None, on_step_end=None, episode_callback_freq=200):
+    def set_callbacks(self, on_episode_end=None, on_step_end=None):
         if on_episode_end:
             self.on_episode_end = on_episode_end
         if on_step_end:
             self.on_step_end = on_step_end
-        self.episode_callback_freq = episode_callback_freq
 
-    def run(self, num_episodes, render=False, render_steps=False):
+    def run(self, num_episodes, batch_size=10, report_freq=50):
         for ep in range(num_episodes):
-            self.episode(ep, render_steps=render_steps)
+            self.episode(ep)
         
-    def episode(self, ep, render=False, render_steps=False):
+    def episode(self, ep):
         # Reset eilgibilities for actor and critic
         self.actor.reset_eligibility()
         self.critic.reset_eligibility()
@@ -56,24 +53,22 @@ class ActorCriticAgent(Agent):
             sap = SAP(state, action)
 
             # Callbacks
-            if render_steps:
-                self.env.render()
-
             if self.on_step_end:
                 self.on_step_end(self, ep, step)
             step += 1
         
         # Callbacks
-        if render:
-            self.env.render()
         if self.on_episode_end:
             self.on_episode_end(self, ep)
 
-        # Some prinnting :)
+        if ep%50 == 0:
+            print(f"Episode: {ep} \teps: {self.actor.epsilon * self.actor.epsilon_decay ** self.actor.episode}")
+
+        # Some printing :)
         if self.env.get_pegs_left() == 1:
-            print(" -------------- WIN!!! -------------- ")
-        else:
-            print(f"Remaining: {self.env.get_pegs_left()}")
+            tf.print(" -------------- WIN!!! -------------- ")
+        #else:
+        #    tf.print(f"Remaining: {self.env.get_pegs_left()}")
 
         #else:
         #    tot_pegs = self.env._board.sum()

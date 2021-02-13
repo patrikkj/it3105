@@ -7,16 +7,21 @@ D = Direction
 TRIANGE_DIRECTIONS = [D.UP_LEFT, D.UP, D.LEFT, D.RIGHT, D.DOWN, D.DOWN_RIGHT]
 DIAMOND_DIRECTIONS = [D.UP_RIGHT, D.UP, D.LEFT, D.RIGHT, D.DOWN, D.DOWN_LEFT]
 
+# Construct 2D-kernel used for move generation
+_ = 0
 _kernel = np.array([
-    [ 3,  0,  5,  0,  7],
-    [ 0,  2,  4,  6,  0],
+    [ 3,  _,  5,  _,  7],
+    [ _,  2,  4,  6,  _],
     [17, 16,  1,  8,  9],
-    [ 0, 14, 12, 10,  0],
-    [15,  0, 13,  0,  11],
+    [ _, 14, 12, 10,  _],
+    [15,  _, 13,  _,  11],
 ])
 kernel = np.exp2(_kernel)[::-1, ::-1] * (_kernel != 0)
-edge_mask = np.exp2(np.array([3, 5, 7, 9, 11, 13, 15, 17])).sum().astype(int)
 
+# Create edge mask - sum of entries on the kernels' circumference
+edge_mask = kernel.copy()
+edge_mask[1:-1, 1:-1] = 0                   # Clears non-edge values
+edge_mask = edge_mask.sum().astype(int)     # Encode edge values in a bit pattern represented by an integer
 
 class PegSolitaire:
     REWARD_WIN = 500
@@ -36,45 +41,21 @@ class PegSolitaire:
             self._board = np.tri(board_size, dtype=np.int64)
             self._mask = np.tri(board_size, k=-1, dtype=np.int64).T
             self.directions = TRIANGE_DIRECTIONS
-        
-        self.dm = np.array([d.kernel for d in self.directions]).reshape(1, 1, -1)
-        if self.board_type == "triangle":
-            self.dm = self.dm * np.tri(self.board_size, dtype=np.int64)[..., None]
+
+        # Create direction matrix, the first two dimensions are broadcasted to the boards' dimensions when applied
+        # The broadcasted matrix is |directions| boards filled with the constant (bitpattern) corresponding to each direction
+        self.dm = np.array([d.kernel for d in self.directions]).reshape((1, 1, -1))
 
         # Initialize environment state (all initialization is done in self.reset())
         self.reset()
-        self.render()
 
     def _generate_moves(self):
-        # Applies the convolution to the entire board.
-        # For triangular board the upper right is masked with ones to prevent generation of moves ending in this quadrant.
-        # The board is padded with ones with a radius of 2 to prevent pegs from jumping out of the board.
-        # This is also to ensure that the convolution is defined along the boards' edges.
         conv = ndimage.convolve(self.board + self._mask, kernel, mode="constant", cval=1)
+        conv = np.bitwise_xor(conv, edge_mask)      # Flips bits corresponding to the kernels' circumference
+        conv_3d = conv[..., np.newaxis]             # Broadcasted to 3d to vectorize calculations for all directions
+        board_3d = self.board[..., np.newaxis]      # Element-wise multiplied to filter pegs
+        return zip(*((np.bitwise_and(conv_3d, self.dm) == self.dm) * board_3d).nonzero())
 
-        # Flips all bits in the resulting convolution which correspond to edges.
-        conv = np.bitwise_xor(conv, edge_mask)
-
-        # ANDs the convolved board with the bitpattern required to move in a specific direction.
-        # Shapes: conv:     (n, n, 1)
-        # dm:               (1, 1, |directions|)
-        # conv & dm:        (n, n, |directions|)
-
-        # zip(*iterable) functionality:
-        #    [
-        #      [1, 1, 4, 5],
-        #      [2, 5, 3, 3],
-        #      [2, 2, 3, 5],
-        #    ]
-        # is converterd to:
-        #    [  x  y  direction
-        #      [1, 2, 2],
-        #      [1, 2, 2],
-        #      [1, 2, 2],
-        #      [1, 2, 2],
-        #    ]
-        return zip(*(np.bitwise_and(conv[..., None], self.dm) == self.dm).nonzero())
-        
     def _set_cell(self, vector, value=0):
         self.board[vector[0], vector[1]] = value
 
@@ -105,7 +86,9 @@ class PegSolitaire:
         self._peg_move_direction = direction
 
         # Determine if terminal state
+        n_before = len(self._actions)
         self._actions = tuple(self._generate_moves())
+        n_after = len(self._actions)
         self._is_terminal = len(self._actions) == 0
 
         # Determine reward
@@ -113,36 +96,21 @@ class PegSolitaire:
         if self._is_terminal and self._pegs_left == 1:
             reward = PegSolitaire.REWARD_WIN
         elif self._is_terminal:
-            reward = PegSolitaire.REWARD_LOSS_PER_PIN * self._pegs_left
+            reward = PegSolitaire.REWARD_LOSS_PER_PIN * self._pegs_left**1.5
         else:
-            reward = PegSolitaire.REWARD_ACTION
+            reward = PegSolitaire.REWARD_ACTION * max(n_before - n_after, 0)
 
         self._step += 1
         return self.get_observation(), reward, self._is_terminal
-
-    def get_current_step(self):
-        """Returns the number of steps for the active episode."""
-        return self._step
 
     def get_pegs_left(self):
         return self._pegs_left
 
     def get_observation(self):
-        """Returns the specifications for the observation space."""
-        return self.board.astype(bool).tobytes()
-
-    def get_observation_spec(self):
-        """Returns the specifications for the observation space."""
-        return (2 ** self.board.size,)
-
-    def get_action_spec(self):
-        """Returns the specifications for the action space."""
-        return (self.board.size,)
+        """Returns the agents' perceivable state of the environment."""
+        return tuple(self.board[self._board == 1])
 
     def get_legal_actions(self):
-        # Upon resetting the enviroment, no actions will be cached
-        if not self._actions:
-            self._actions = tuple(self._generate_moves())
         return self._actions
 
     def reset(self):
@@ -150,16 +118,13 @@ class PegSolitaire:
         self.board = self._board.copy()
         self._assign_holes()
         self._pegs_left = self.board.sum()
-        self._actions = []
+        self._actions = tuple(self._generate_moves())
         self._is_terminal = False
         self._step = 0
 
     def is_terminal(self):
         """Determines whether the given state is a terminal state."""
         return self._is_terminal
-
-    def render(self):
-        print(self.board, "\n")
 
     def __enter__(self):
         """Support with-statement for the environment. """
@@ -169,57 +134,10 @@ class PegSolitaire:
         """Support with-statement for the environment. """
         return False
 
-    @staticmethod
-    def decode_state(state):
-        """Decodes from binary to a vector-like state representation."""
-        return np.fromstring(state, dtype=bool)
-
-
 
 def print_bin_matrix(matrix):
     for row in matrix:
-        print([f"{x:018b}" for x in row])
-
-
-
-"""
-board = PegSolitaire(board_type="triangle")
-total_moves = 0
-
-import time
-t0 = time.perf_counter()
-for _ in range(100_000):
-    actions = board.get_legal_actions()
-    #print(actions)
-t1 = time.perf_counter()
-"""
-# print(actions)
-# print("done")
-# print(t1-t0, "s")
-# print(bin(UP))
-# print(np.bitwise_and(conv, UP_LEFT) == UP_LEFT)
-
-
-# print(kernel)
-# print(bin(conv[2, 2]))
-
-# conv_list2 = conv.tolist()
-def print_bin_matrix(matrix):
-    for row in matrix:
-        print([f"{x:018b}" for x in row])
-        
-"""
-arr = np.array([direction.vector for direction in TRIANGE_DIRECTIONS])
-board = np.tri(5, dtype=int)
-print(arr)
-
-print(board)
-
-
-[[-1, -1],
- [-1,  0],
- [0, -1],
- [0,  1],
- [1,  0],
- [1,  1]]
- """
+        if row.ndim != 1:
+            print_bin_matrix(row)
+        else:
+            print([f"{x:018b}" for x in row])
