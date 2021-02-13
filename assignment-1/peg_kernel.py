@@ -35,12 +35,14 @@ class PegSolitaire:
 
         if board_type == "diamond":
             self._board = np.ones((board_size, board_size), dtype=np.int64)
-            self._mask = np.zeros((board_size, board_size), dtype=np.int64)
             self.directions = DIAMOND_DIRECTIONS
         else:
             self._board = np.tri(board_size, dtype=np.int64)
-            self._mask = np.tri(board_size, k=-1, dtype=np.int64).T
             self.directions = TRIANGE_DIRECTIONS
+
+        # Used for pruning invalid actions/positions
+        self._mask = self._board.astype(bool)
+        self._total_cells = self._mask.sum()
 
         # Create direction matrix, the first two dimensions are broadcasted to the boards' dimensions when applied
         # The broadcasted matrix is |directions| boards filled with the constant (bitpattern) corresponding to each direction
@@ -50,7 +52,7 @@ class PegSolitaire:
         self.reset()
 
     def _generate_moves(self):
-        conv = ndimage.convolve(self.board + self._mask, kernel, mode="constant", cval=1)
+        conv = ndimage.convolve(self.board + ~self._mask, kernel, mode="constant", cval=1)
         conv = np.bitwise_xor(conv, edge_mask)      # Flips bits corresponding to the kernels' circumference
         conv_3d = conv[..., np.newaxis]             # Broadcasted to 3d to vectorize calculations for all directions
         board_3d = self.board[..., np.newaxis]      # Element-wise multiplied to filter pegs
@@ -108,7 +110,9 @@ class PegSolitaire:
 
     def get_observation(self):
         """Returns the agents' perceivable state of the environment."""
-        return tuple(self.board[self._board == 1])
+        return self.board[self._mask].astype(bool).tobytes()
+        #return np.packbits(self.board[self._mask]).tobytes()
+        #return tuple(self.board[self._board == 1])
 
     def get_legal_actions(self):
         return self._actions
@@ -126,18 +130,13 @@ class PegSolitaire:
         """Determines whether the given state is a terminal state."""
         return self._is_terminal
 
+    # Included to support 'with' statement
     def __enter__(self):
-        """Support with-statement for the environment. """
         return self
 
     def __exit__(self, *args):
-        """Support with-statement for the environment. """
         return False
 
-
-def print_bin_matrix(matrix):
-    for row in matrix:
-        if row.ndim != 1:
-            print_bin_matrix(row)
-        else:
-            print([f"{x:018b}" for x in row])
+    def decode_state(self, state):
+        return np.frombuffer(state, dtype=np.uint8)
+        #return np.unpackbits(np.frombuffer(state, dtype=np.uint8), count=self._total_cells)

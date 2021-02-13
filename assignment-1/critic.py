@@ -41,13 +41,14 @@ class CriticTable(AbstractCritic):
         self.decay_rate = decay_rate
         self.discount_rate = discount_rate
 
-    def __call__(self, r, s, s_next):
-        """Returns the critics' evaluation of a given state (TD error)."""
-        v = self.V.setdefault(s, np.random.uniform(0.05, 0.1))
-        v_next = self.V.setdefault(s_next, np.random.uniform(0.05, 0.1))
-        self.eligibility.setdefault(s, 0)
-        self.eligibility.setdefault(s_next, 0)
-        return r + self.discount_rate * v_next - v
+    def __call__(self, state):
+        """Returns the critics' evaluation of a given state."""
+        self.eligibility.setdefault(state, 0)
+        return self.V.setdefault(state, np.random.uniform(0.05, 0.1))
+
+    def td_error(self, r, s, s_next):
+        """Returns the temporal difference (TD) error."""
+        return r + self.discount_rate * self(s_next) - self(s)
 
     def reset_eligibility(self):
         self.eligibility = {}
@@ -86,14 +87,16 @@ class CriticNetwork(AbstractCritic):
         self.model = self._build_model()
         self.eligibility = [tf.Variable(tf.zeros_like(weights)) for weights in self.model.trainable_weights]
 
-    def __call__(self, r, s, s_next):
-        return self.model(tf.reshape(tf.convert_to_tensor(s), shape=(1, -1)))
+    def __call__(self, state):
+        """Returns the critics' evaluation of a given state."""
+        decoded = self.env.decode_state(state)
+        tensor = tf.convert_to_tensor(decoded)
+        reshaped = tf.reshape(tensor, shape=(1, -1))
+        return self.model(reshaped)
 
     def td_error(self, r, s, s_next):
-        """Returns the critics' evaluation of a given state (TD error)."""
-        v = self(s)
-        v_next = self(s_next)
-        return r + self.discount_rate * v_next - v
+        """Returns the temporal difference (TD) error."""
+        return r + self.discount_rate * self(s_next) - self(s)
 
     def _build_model(self):
         model = tf.keras.Sequential()
@@ -108,12 +111,12 @@ class CriticNetwork(AbstractCritic):
         self.eligibility = [tf.Variable(tf.zeros_like(weights)) for weights in self.model.trainable_weights]
 
     def update_eligibility(self, state):
-        tensor = tf.convert_to_tensor(state)
+        #tensor = tf.convert_to_tensor(state)
         weights = self.model.trainable_weights
 
         # Wraps tf.ops to record operations such that gradients can be calculated
         with tf.GradientTape() as tape: 
-            value = self.model(tf.reshape(tensor, shape=(1, -1)))
+            value = self(state)
         gradients = tape.gradient(value, weights)
 
         # Update eligibility traces
@@ -123,14 +126,15 @@ class CriticNetwork(AbstractCritic):
 
     def update_value_func(self, error):
         weights = self.model.trainable_weights
-        error = tf.reshape(error, -1)
+        error = tf.reshape(error*1000, -1)
         weight_adjustment = [self.eligibility[i] * error for i in range(len(weights))]
         self.model.optimizer.apply_gradients(zip(weight_adjustment, weights))
 
-        # before_weights = [w.numpy() for w in weights]
-        # after_weights = [w.numpy() for w in weights]
-        # diffs = [np.abs(w1 - w2).sum() for w1, w2 in zip(before_weights, after_weights)]
-        # print(error)
+        #print(error)
+        #before_weights = [w.numpy() for w in weights]
+        #print(self.env.get_observation())
+        #after_weights = [w.numpy() for w in weights]
+        #diffs = [np.abs(w1 - w2).sum() for w1, w2 in zip(before_weights, after_weights)]
         #print(sum(diffs))
 
 

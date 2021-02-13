@@ -1,19 +1,18 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-import graphics
 from actor import Actor
 from agent import ActorCriticAgent
 from critic import CriticNetwork, CriticTable
 from peg_kernel import PegSolitaire
 from plotpegs import plot
 
-N_EPISODES = 300
+N_EPISODES = 5000
 RESET_ON_EXPLORE = True
 
 peg_params = {
     "board_type": "triangle",
-    "board_size": 4,
+    "board_size": 6,
     "holes": [(2, 2)],
 }
 
@@ -25,34 +24,34 @@ critic_table_params = {
 
 critic_nn_params = {
     "layer_dims": (15, 10, 4, 1), 
-    "alpha": 3e-4, 
+    "alpha": 3e-2, 
     "decay_rate": 0.9,
     "discount_rate": 0.95,
 }
 
-# critic_nn_params_old = {
-#     "layer_dims": (10, 15, 5, 1), 
-#     "alpha": 1e-4, 
+critic_nn_params = {
+    "layer_dims": (10, 15, 5, 1), 
+    "alpha": 1e-4, 
+    "decay_rate": 0.9,
+    "discount_rate": 0.99,
+}
+
+# actor_params = {
+#     "alpha": 0.3,
 #     "decay_rate": 0.9,
 #     "discount_rate": 0.99,
+#     "epsilon": 0.0,
+#     "epsilon_decay": 0.99
 # }
 
 actor_params = {
-    "alpha": 0.25,
-    "decay_rate": 0.8,
-    "discount_rate": 0.95,
-    "epsilon": 0.7,
-    "epsilon_decay": 0.996
+    "alpha": 0.15,
+    "decay_rate": 0.9,
+    "discount_rate": 0.99,
+    "epsilon": 1, 
+    "epsilon_decay": 0.99
 }
-
-# actor_params_old = {
-#     "alpha": 0.15,
-#     "decay_rate": 0.9,
-#     "discount_rate": 0.99,
-#     "epsilon": 1, 
-#     "epsilon_decay": 0.99
-# }
-# decay: '5x5': 0.99, '6x6': 0.99, '7x7': 0.9995
+#decay: '5x5': 0.99, '6x6': 0.99, '7x7': 0.9995
 
 
 step_logs = []
@@ -82,8 +81,8 @@ def main():
         print(environment.board)
 
         # Configure agent
-        #critic = CriticTable(environment, **critic_table_params)
-        critic = CriticNetwork(environment, **critic_nn_params)
+        critic = CriticTable(environment, **critic_table_params)
+        #critic = CriticNetwork(environment, **critic_nn_params)
         actor = Actor(environment, **actor_params)
         agent = ActorCriticAgent(environment, actor, critic)
         agent.set_callbacks(on_episode_end=on_episode_end, on_step_end=on_step_end)

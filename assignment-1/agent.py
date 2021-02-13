@@ -43,7 +43,7 @@ class ActorCriticAgent:
             # Evaluate state and action using actor and critic
             if not is_terminal:
                 action = self.actor(state)
-            error = self.critic(reward, sap.state, state)
+            error = self.critic.td_error(reward, sap.state, state)
 
             # Update eligibilities
             self.actor.update_all(sap, error)
