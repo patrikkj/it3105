@@ -13,7 +13,7 @@ RESET_ON_EXPLORE = True
 
 peg_params = {
     "board_type": "triangle",
-    "board_size": 6,
+    "board_size": 5,
     "holes": [(2, 2)],
 }
 
@@ -31,7 +31,7 @@ critic_nn_params = {
 }
 
 actor_params = {
-    "alpha": 0.15,
+    "alpha": 0.3,
     "decay_rate": 0.9,
     "discount_rate": 0.99,
     "epsilon": 1, 

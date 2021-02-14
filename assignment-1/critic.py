@@ -62,7 +62,9 @@ class CriticTable(AbstractCritic):
         for state, value in self.eligibility.items():
             self.V[state] += value * self.alpha * error
 
-    def update_all(self, state, error):
+    def update_all(self, state, error, is_exploring):
+        if is_exploring:
+            self.reset_eligibility()
         self.update_eligibility(state)
         self.update_value_func(error)
 
@@ -138,6 +140,8 @@ class CriticNetwork(AbstractCritic):
         #print(sum(diffs))
 
 
-    def update_all(self, state, error):
+    def update_all(self, state, error, is_exploring):
+        if is_exploring:
+            self.reset_eligibility()
         self.update_eligibility(state)
         self.update_value_func(error)

@@ -45,10 +45,11 @@ class Actor:
         adjusted_epsilon = self.epsilon * self.epsilon_decay ** self.episode
         if np.random.random() < adjusted_epsilon:
             action = legal_actions[np.random.choice(len(legal_actions))]
+            return action, True
         else:
             #action = np.random.choice(saps, weights=[self.policy[sap] for sap in saps]).action
             action = max(saps, key=lambda sap: self.policy.get(sap, 0)).action
-        return action
+            return action, False
 
     def set_episode(self, episode):
         self.episode = episode
@@ -65,6 +66,8 @@ class Actor:
         for sap, elig in self.eligibility.items():
             self.policy[sap] += self.alpha * error * elig
 
-    def update_all(self, sap, error):
+    def update_all(self, sap, error, is_exploring):
+        if is_exploring:
+            self.reset_eligibility()
         self.update_eligibility(sap)
         self.update_policy(error)

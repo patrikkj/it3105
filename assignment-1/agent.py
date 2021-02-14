@@ -32,7 +32,7 @@ class ActorCriticAgent:
         # Initialize environment and fetch initial state
         self.env.reset()
         state = self.env.get_observation()
-        action = self.actor(state)
+        action, is_exploring = self.actor(state)
         sap = SAP(state, action)
 
         step = 0
@@ -42,12 +42,12 @@ class ActorCriticAgent:
 
             # Evaluate state and action using actor and critic
             if not is_terminal:
-                action = self.actor(state)
+                action, is_exploring = self.actor(state)
             error = self.critic.td_error(reward, sap.state, state)
 
             # Update eligibilities
-            self.actor.update_all(sap, error)
-            self.critic.update_all(sap.state, error)
+            self.actor.update_all(sap, error, is_exploring)
+            self.critic.update_all(sap.state, error, is_exploring)
 
             # Create sap for next iteration
             sap = SAP(state, action)
@@ -62,7 +62,7 @@ class ActorCriticAgent:
             self.on_episode_end(self, ep)
 
         if ep%50 == 0:
-            print(f"Episode: {ep} \teps: {self.actor.epsilon * self.actor.epsilon_decay ** self.actor.episode}")
+            tf.print(f"Episode: {ep} \teps: {self.actor.epsilon * self.actor.epsilon_decay ** self.actor.episode}")
 
         # Some printing :)
         if self.env.get_pegs_left() == 1:
