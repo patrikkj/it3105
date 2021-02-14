@@ -1,0 +1,24 @@
+{
+    "N_EPISODES": 10000,
+    "RESET_ON_EXPLORE": false,
+
+    "peg_params": {
+        "board_type": "triangle",
+        "board_size": 7,
+        "holes": [[2, 2]]
+    },
+
+    "critic_table_params": {
+        "alpha": 0.3, 
+        "decay_rate": 0.9, 
+        "discount_rate": 0.99
+    },
+
+    "actor_params": {
+        "alpha": 0.15,
+        "decay_rate": 0.9,
+        "discount_rate": 0.99,
+        "epsilon": 1, 
+        "epsilon_decay": 0.9995
+    }
+}

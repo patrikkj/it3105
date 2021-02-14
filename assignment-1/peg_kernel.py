@@ -23,6 +23,7 @@ edge_mask = kernel.copy()
 edge_mask[1:-1, 1:-1] = 0                   # Clears non-edge values
 edge_mask = edge_mask.sum().astype(int)     # Encode edge values in a bit pattern represented by an integer
 
+
 class PegSolitaire:
     REWARD_WIN = 500
     REWARD_ACTION = 0

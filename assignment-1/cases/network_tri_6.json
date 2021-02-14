@@ -1,0 +1,25 @@
+{
+    "N_EPISODES": 1000,
+    "RESET_ON_EXPLORE": false,
+
+    "peg_params": {
+        "board_type": "triangle",
+        "board_size": 6,
+        "holes": [[2, 2]]
+    },
+
+    "critic_nn_params": {
+        "layer_dims": [10, 15, 5, 1], 
+        "alpha": 1e-4, 
+        "decay_rate": 0.9,
+        "discount_rate": 0.99
+    },
+
+    "actor_params": {
+        "alpha": 0.15,
+        "decay_rate": 0.9,
+        "discount_rate": 0.99,
+        "epsilon": 1, 
+        "epsilon_decay": 0.99
+    }
+}
