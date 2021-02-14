@@ -45,9 +45,9 @@ class ActorCriticAgent:
                 action, is_exploring = self.actor(state)
             error = self.critic.td_error(reward, sap.state, state)
 
-            # Update eligibilities
-            self.actor.update_all(sap, error, is_exploring)
-            self.critic.update_all(sap.state, error, is_exploring)
+            # Update weights & eligibilities
+            self.actor.update(sap, error, is_exploring)
+            self.critic.update(sap.state, error, is_exploring)
 
             # Create sap for next iteration
             sap = SAP(state, action)

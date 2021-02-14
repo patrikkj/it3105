@@ -2,29 +2,60 @@ from abc import abstractmethod
 
 import numpy as np
 import tensorflow as tf
+from enum import Enum
 
 
-class AbstractCritic:
-    pass
-    # @abstractmethod
-    # def __call__(self, r, s, s_next):
-    #     """Returns the critics' evaluation of a given state (TD error)."""
-# 
-    # @abstractmethod
-    # def set_eligibility(self, s, value):
-    #     """Sets the eligibility for a state to a specified value."""
-# 
-    # @abstractmethod
-    # def reset_eligibility(self):
-    #     """Resets the eligibility for all states."""
-# 
-    # @abstractmethod
-    # def update_weights(self, error):
-    #     """Updates the eligibility for all states by the specified error."""
+class Critic:
+    # Critic types
+    TABLE = "table"
+    NETWORK = "network"
+
+    def __init__(self, env, alpha, decay_rate, discount_rate, reset_on_explore):
+        self.env = env
+        self.alpha = alpha
+        self.decay_rate = decay_rate
+        self.discount_rate = discount_rate
+        self.reset_on_explore = reset_on_explore
+    
+    @abstractmethod
+    def __call__(self, state):
+        ...
+
+    @abstractmethod
+    def td_error(self, r, s, s_next):
+        ...
+
+    @abstractmethod
+    def reset_eligibility(self):
+        ...
+
+    @abstractmethod
+    def update_eligibility(self, state):
+        ...
+
+    @abstractmethod
+    def update_weights(self, error):
+        ...
+
+    @abstractmethod
+    def update(self, state, error, is_exploring):
+        ...
+
+    @staticmethod
+    def from_type(type_, *args, **kwargs):
+        if type_ == Critic.TABLE:
+            return CriticTable(*args, **kwargs)
+        elif type_ == Critic.NETWORK:
+            return CriticNetwork(*args, **kwargs)
 
 
-class CriticTable(AbstractCritic):
-    def __init__(self, env, alpha=0.01, decay_rate=0.9, discount_rate=0.99):
+class CriticTable(Critic):
+    def __init__(self, env,
+                 alpha=0.01,
+                 decay_rate=0.9,
+                 discount_rate=0.99,
+                 reset_on_explore=True,
+                 **kwargs):
         """
         Har i oppgave å evaluere tilstander.
 
@@ -34,12 +65,9 @@ class CriticTable(AbstractCritic):
             decay_rate:             Trace decay rate (λ) (eligibility decay / decay for prev. states)
             discount_rate:          Discount rate (𝛾) / future decay rate for depreciating future rewards.
         """
-        self.env = env
-        self.V = {}                 # Format:   state -> value
+        super().__init__(env, alpha, decay_rate, discount_rate, reset_on_explore)
+        self.V = {}
         self.eligibility = {}
-        self.alpha = alpha
-        self.decay_rate = decay_rate
-        self.discount_rate = discount_rate
 
     def __call__(self, state):
         """Returns the critics' evaluation of a given state."""
@@ -58,19 +86,25 @@ class CriticTable(AbstractCritic):
             self.eligibility[state_] = self.discount_rate * self.decay_rate * value
         self.eligibility[state] = 1
 
-    def update_value_func(self, error):
+    def update_weights(self, error):
         for state, value in self.eligibility.items():
             self.V[state] += value * self.alpha * error
 
-    def update_all(self, state, error, is_exploring):
-        if is_exploring:
+    def update(self, state, error, is_exploring):
+        if is_exploring and self.reset_on_explore:
             self.reset_eligibility()
         self.update_eligibility(state)
-        self.update_value_func(error)
+        self.update_weights(error)
 
 
-class CriticNetwork(AbstractCritic):
-    def __init__(self, env, alpha=0.01, decay_rate=0.9, discount_rate=0.99, layer_dims=None):
+class CriticNetwork(Critic):
+    def __init__(self, env,
+                 alpha=0.01,
+                 decay_rate=0.9,
+                 discount_rate=0.99,
+                 reset_on_explore=True, 
+                 layer_dims=None, 
+                 **kwargs):
         """
         Args:
             env:                    Environment, used to fetch state space specifications.
@@ -79,10 +113,7 @@ class CriticNetwork(AbstractCritic):
             discount_rate:          Discount rate (𝛾) / future decay rate for depreciating future rewards.
             layer_dims:             Number of units within the models' hidden layers.
         """
-        self.env = env
-        self.alpha = alpha
-        self.decay_rate = decay_rate
-        self.discount_rate = discount_rate
+        super().__init__(env, alpha, decay_rate, discount_rate, reset_on_explore)
 
         # Build model
         self.layer_dims = layer_dims
@@ -126,9 +157,9 @@ class CriticNetwork(AbstractCritic):
             self.eligibility[i] = self.eligibility[i] *  self.decay_rate
             self.eligibility[i] = tf.math.add(self.eligibility[i], gradients[i])
 
-    def update_value_func(self, error):
+    def update_weights(self, error):
         weights = self.model.trainable_weights
-        error = tf.reshape(error*1000, -1)
+        error = tf.reshape(error * 1000, -1)
         weight_adjustment = [self.eligibility[i] * error for i in range(len(weights))]
         self.model.optimizer.apply_gradients(zip(weight_adjustment, weights))
 
@@ -140,8 +171,8 @@ class CriticNetwork(AbstractCritic):
         #print(sum(diffs))
 
 
-    def update_all(self, state, error, is_exploring):
+    def update(self, state, error, is_exploring):
         if is_exploring:
             self.reset_eligibility()
         self.update_eligibility(state)
-        self.update_value_func(error)
+        self.update_weights(error)

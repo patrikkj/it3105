@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import NamedTuple
+import numpy as np
 
 
 class SAP(NamedTuple):
@@ -28,3 +29,21 @@ class Direction(Enum):
     @property
     def kernel(self):
         return self.value[1]
+
+
+# Construct 2D-kernel used for move generation
+_ = 0
+kernel = np.array([
+    [ 3,  _,  5,  _,  7],
+    [ _,  2,  4,  6,  _],
+    [17, 16,  1,  8,  9],
+    [ _, 14, 12, 10,  _],
+    [15,  _, 13,  _,  11],
+])
+kernel = np.exp2(kernel)[::-1, ::-1] * (kernel != 0)
+
+
+# Create edge mask - sum of entries on the kernels' circumference
+edge_mask = kernel.copy()
+edge_mask[1:-1, 1:-1] = 0                   # Clears non-edge values
+edge_mask = edge_mask.sum().astype(int)     # Encode edge values in a bit pattern represented by an integer

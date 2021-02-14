@@ -1,53 +1,65 @@
 import numpy as np
 from scipy import ndimage
-from utils import Direction
+from utils import Direction, kernel, edge_mask
+from abc import abstractmethod
 
 
 D = Direction
 TRIANGE_DIRECTIONS = [D.UP_LEFT, D.UP, D.LEFT, D.RIGHT, D.DOWN, D.DOWN_RIGHT]
 DIAMOND_DIRECTIONS = [D.UP_RIGHT, D.UP, D.LEFT, D.RIGHT, D.DOWN, D.DOWN_LEFT]
 
-# Construct 2D-kernel used for move generation
-_ = 0
-_kernel = np.array([
-    [ 3,  _,  5,  _,  7],
-    [ _,  2,  4,  6,  _],
-    [17, 16,  1,  8,  9],
-    [ _, 14, 12, 10,  _],
-    [15,  _, 13,  _,  11],
-])
-kernel = np.exp2(_kernel)[::-1, ::-1] * (_kernel != 0)
 
-# Create edge mask - sum of entries on the kernels' circumference
-edge_mask = kernel.copy()
-edge_mask[1:-1, 1:-1] = 0                   # Clears non-edge values
-edge_mask = edge_mask.sum().astype(int)     # Encode edge values in a bit pattern represented by an integer
+class Environment:
+    @abstractmethod
+    def step(self, action):
+        ...
+
+    @abstractmethod
+    def reset(self):
+        ...
+
+    @abstractmethod
+    def is_terminal(self):
+        ...
+
+    @abstractmethod
+    def get_observation(self):
+        # NOTE: Observations must be hashable!
+        ...
+
+    def decode_state(self, state):
+        """
+        Overload this method if 'self.get_observation()' 
+        returns a compressed state representation.
+        """
+        return state
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
 
 
-class PegSolitaire:
+class PegEnvironment(Environment):
+    # Board types
+    TRIANGLE = "triangle"
+    DIAMOND = "diamond"
+
     REWARD_WIN = 500
     REWARD_ACTION = 0
     REWARD_LOSS_PER_PIN = -15
 
-    def __init__(self, board_type="diamond", board_size=5, holes=1):
-        self.board_type = board_type
+    def __init__(self, board_size=5, holes=1):
         self.board_size = board_size
         self.holes = holes
-
-        if board_type == "diamond":
-            self._board = np.ones((board_size, board_size), dtype=np.int64)
-            self.directions = DIAMOND_DIRECTIONS
-        else:
-            self._board = np.tri(board_size, dtype=np.int64)
-            self.directions = TRIANGE_DIRECTIONS
 
         # Used for pruning invalid actions/positions
         self._mask = self._board.astype(bool)
         self._total_cells = self._mask.sum()
 
-        # Create direction matrix, the first two dimensions are broadcasted to the boards' dimensions when applied
-        # The broadcasted matrix is |directions| boards filled with the constant (bitpattern) corresponding to each direction
-        self.dm = np.array([d.kernel for d in self.directions]).reshape((1, 1, -1))
+        # The broadcasted matrix is |directions| boards filled with the constant (bitpattern) for each direction
+        self.dir_matrix = np.array([d.kernel for d in self.directions]).reshape((1, 1, -1))
 
         # Initialize environment state (all initialization is done in self.reset())
         self.reset()
@@ -57,7 +69,7 @@ class PegSolitaire:
         conv = np.bitwise_xor(conv, edge_mask)      # Flips bits corresponding to the kernels' circumference
         conv_3d = conv[..., np.newaxis]             # Broadcasted to 3d to vectorize calculations for all directions
         board_3d = self.board[..., np.newaxis]      # Element-wise multiplied to filter pegs
-        return zip(*((np.bitwise_and(conv_3d, self.dm) == self.dm) * board_3d).nonzero())
+        return zip(*((np.bitwise_and(conv_3d, self.dir_matrix) == self.dir_matrix) * board_3d).nonzero())
 
     def _set_cell(self, vector, value=0):
         self.board[vector[0], vector[1]] = value
@@ -83,28 +95,30 @@ class PegSolitaire:
         self._set_cell(vector + direction, value=0)
         self._set_cell(vector + 2 * direction, value=1)
 
-        # Cache previous move
+        # Cache previous move (can be handy for visualization)
         self._peg_start_position = vector
         self._peg_end_position = vector + 2 * direction
         self._peg_move_direction = direction
 
         # Determine if terminal state
-        n_before = len(self._actions)
         self._actions = tuple(self._generate_moves())
-        n_after = len(self._actions)
         self._is_terminal = len(self._actions) == 0
 
         # Determine reward
         self._pegs_left = self.board.sum()
-        if self._is_terminal and self._pegs_left == 1:
-            reward = PegSolitaire.REWARD_WIN
-        elif self._is_terminal:
-            reward = PegSolitaire.REWARD_LOSS_PER_PIN * self._pegs_left**1.5
-        else:
-            reward = PegSolitaire.REWARD_ACTION * max(n_before - n_after, 0)
+        reward = self.calculate_reward()
 
         self._step += 1
         return self.get_observation(), reward, self._is_terminal
+
+    def calculate_reward(self):
+        if self._is_terminal and self._pegs_left == 1:
+            reward = PegEnvironment.REWARD_WIN
+        elif self._is_terminal:
+            reward = PegEnvironment.REWARD_LOSS_PER_PIN * self._pegs_left**1.5
+        else:
+            reward = PegEnvironment.REWARD_ACTION
+        return reward
 
     def get_pegs_left(self):
         return self._pegs_left
@@ -112,8 +126,6 @@ class PegSolitaire:
     def get_observation(self):
         """Returns the agents' perceivable state of the environment."""
         return self.board[self._mask].astype(bool).tobytes()
-        #return np.packbits(self.board[self._mask]).tobytes()
-        #return tuple(self.board[self._board == 1])
 
     def get_legal_actions(self):
         return self._actions
@@ -131,13 +143,26 @@ class PegSolitaire:
         """Determines whether the given state is a terminal state."""
         return self._is_terminal
 
-    # Included to support 'with' statement
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        return False
-
     def decode_state(self, state):
         return np.frombuffer(state, dtype=np.uint8)
-        #return np.unpackbits(np.frombuffer(state, dtype=np.uint8), count=self._total_cells)
+
+    @staticmethod
+    def from_type(type_, *args, **kwargs):
+        if type_== PegEnvironment.TRIANGLE:
+            return PegEnvironmentTriangle(*args, **kwargs)
+        elif type_== PegEnvironment.DIAMOND:
+            return PegEnvironmentDiamond(*args, **kwargs)
+
+
+class PegEnvironmentTriangle(PegEnvironment):
+    def __init__(self, board_size=5, holes=None):
+        self._board = np.tri(board_size, dtype=np.int64)
+        self.directions = TRIANGE_DIRECTIONS
+        super().__init__(board_size=board_size, holes=holes)
+
+
+class PegEnvironmentDiamond(PegEnvironment):
+    def __init__(self, board_size=5, holes=None):
+        self._board = np.ones((board_size, board_size), dtype=np.int64)
+        self.directions = DIAMOND_DIRECTIONS
+        super().__init__(board_size=board_size, holes=holes)

@@ -17,7 +17,8 @@ class Actor:
             epsilon_decay:          Rate at which the exploration rate decay.
     """
 
-    def __init__(self, env, alpha=0.01, decay_rate=0.9, discount_rate=0.9, epsilon=0.5, epsilon_decay=0.999):
+    def __init__(self, env, alpha=0.01, decay_rate=0.9, discount_rate=0.9, 
+                 epsilon=0.5, epsilon_decay=0.999, reset_on_explore=True):
         self.env = env
 
         # Eligibility
@@ -31,6 +32,7 @@ class Actor:
         self.episode = 0
         self.epsilon = epsilon
         self.epsilon_decay = epsilon_decay
+        self.reset_on_explore = reset_on_explore
 
     def __call__(self, state):
         """Returns the actors' proposed action for a given state."""
@@ -66,8 +68,8 @@ class Actor:
         for sap, elig in self.eligibility.items():
             self.policy[sap] += self.alpha * error * elig
 
-    def update_all(self, sap, error, is_exploring):
-        if is_exploring:
+    def update(self, sap, error, is_exploring):
+        if is_exploring and self.reset_on_explore:
             self.reset_eligibility()
         self.update_eligibility(sap)
         self.update_policy(error)
