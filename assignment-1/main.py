@@ -7,6 +7,10 @@ from critic import Critic
 from agent import ActorCriticAgent
 from environment import PegEnvironment
 
+<<<<<<< Updated upstream
+=======
+N_EPISODES = 20
+>>>>>>> Stashed changes
 
 config = {
     "n_episodes": 1000,
@@ -42,8 +46,20 @@ def main():
     n_episodes = config["n_episodes"]
     reset_on_explore = config["reset_on_explore"]
 
+<<<<<<< Updated upstream
     critic_type = config["critic_type"]
     evironment_type = config["environment_type"]
+=======
+step_logs = {}
+def on_step_end(agent, episode, step):
+    series = pd.Series()
+    series["board"] = agent.env.board.copy()
+    series["n_pegs_left"] = agent.env.get_pegs_left()
+    series["peg_move_direction"] = agent.env._peg_move_direction
+    series["peg_start_position"] = agent.env._peg_start_position
+    series["peg_end_position"] = agent.env._peg_end_position
+    step_logs[(episode, step)] = series
+>>>>>>> Stashed changes
 
     environment_params = config["environment_params"]
     critic_params = config["critic_params"]
@@ -81,6 +97,20 @@ def main():
         df_episodes["n_pegs_left"].plot()
         plt.show()
 
+<<<<<<< Updated upstream
+=======
+# decay: '5x5': 0.99, '6x6': 0.99, '7x7': 0.9995
+def main():
+    with PegSolitaire(**peg_params) as environment:
+        critic = CriticTable(environment, **critic_table_params)
+        actor = Actor(environment, **actor_params)
+        agent = ActorCriticAgent(environment, actor, critic)
+        agent.set_callbacks(on_episode_end=on_episode_end)
+        agent.run(N_EPISODES, render=False, render_steps=False)
+        print(episode_logs)
+        print("---------------------------- STEP LOGS --------------------")
+        print(step_logs)
+>>>>>>> Stashed changes
 
 def debug():
     import cProfile
