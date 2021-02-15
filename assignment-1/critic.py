@@ -2,7 +2,6 @@ from abc import abstractmethod
 
 import numpy as np
 import tensorflow as tf
-from enum import Enum
 
 
 class Critic:

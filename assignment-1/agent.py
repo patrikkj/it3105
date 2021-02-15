@@ -10,8 +10,9 @@ class ActorCriticAgent:
         self.critic = critic    # We should initialize critic with small random values
 
         # Callbacks for logging (self -> ...)
-        self.on_episode_end = None
-        self.on_step_end = None
+        self.on_episode_end = []
+        self.on_step_end = []
+        self._current_episode = 0
 
     def set_callbacks(self, on_episode_end=None, on_step_end=None):
         if on_episode_end:
@@ -19,20 +20,27 @@ class ActorCriticAgent:
         if on_step_end:
             self.on_step_end = on_step_end
 
-    def run(self, num_episodes, batch_size=10, report_freq=50):
-        for ep in range(num_episodes):
-            self.episode(ep)
+    def run(self, num_episodes, training=True):
+        for _ in range(num_episodes):
+            self.episode(training=training)
         
-    def episode(self, ep):
+            # Callbacks
+            for callback in self.on_episode_end:
+                callback(self, self._current_episode)
+        
+    def episode(self, training=True):
+        self._training = training
+        self._current_episode += 1
+        
         # Reset eilgibilities for actor and critic
         self.actor.reset_eligibility()
         self.critic.reset_eligibility()
-        self.actor.set_episode(ep)
+        self.actor.set_episode(self._current_episode)
 
         # Initialize environment and fetch initial state
         self.env.reset()
         state = self.env.get_observation()
-        action, is_exploring = self.actor(state)
+        action, is_exploring = self.actor(state, training=training)
         sap = SAP(state, action)
 
         step = 0
@@ -42,7 +50,7 @@ class ActorCriticAgent:
 
             # Evaluate state and action using actor and critic
             if not is_terminal:
-                action, is_exploring = self.actor(state)
+                action, is_exploring = self.actor(state, training=training)
             error = self.critic.td_error(reward, sap.state, state)
 
             # Update weights & eligibilities
@@ -53,20 +61,16 @@ class ActorCriticAgent:
             sap = SAP(state, action)
 
             # Callbacks
-            if self.on_step_end:
-                self.on_step_end(self, ep, step)
+            for callback in self.on_step_end:
+                callback(self, self._current_episode, step)
             step += 1
+
+        #if self._current_episode%50 == 0:
+        #    tf.print(f"Episode: {self._current_episode} \teps: {self.actor.epsilon * self.actor.epsilon_decay ** self.actor.episode}")
         
-        # Callbacks
-        if self.on_episode_end:
-            self.on_episode_end(self, ep)
-
-        if ep%50 == 0:
-            tf.print(f"Episode: {ep} \teps: {self.actor.epsilon * self.actor.epsilon_decay ** self.actor.episode}")
-
         # Some printing :)
-        if self.env.get_pegs_left() == 1:
-            tf.print(" -------------- WIN!!! -------------- ")
+        #if self.env.get_pegs_left() == 1:
+        #    tf.print(" -------------- WIN!!! -------------- ")
         #else:
         #    tf.print(f"Remaining: {self.env.get_pegs_left()}")
 

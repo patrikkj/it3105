@@ -1,6 +1,8 @@
+import tensorflow as tf
+
 
 step_logs = []
-def on_step_end(agent, episode, step):
+def step_logger(agent, episode, step):
     series = {}
     series["episode"] = episode
     series["step"] = step
@@ -12,9 +14,23 @@ def on_step_end(agent, episode, step):
     step_logs.append(series)
 
 episode_logs = []
-def on_episode_end(agent, episode):
+def episode_logger(agent, episode):
     series = {}
     series["episode"] = episode
     series["board"] = agent.env.board.copy()
     series["n_pegs_left"] = agent.env.get_pegs_left()
     episode_logs.append(series)
+
+def episode_reporter_wrapper(freq=50):
+    def episode_reporter(agent, episode):
+        if episode % freq == 0:
+            latest = episode_logs[-freq:]
+            n_episodes = len(latest)
+            n_pegs = [series["n_pegs_left"] for series in latest]
+            n_wins = sum(n == 1 for n in n_pegs)
+
+            ep_info = f"Episode {(episode + 1) - n_episodes} -  {episode}"
+            wins_info = f"wins: {n_wins}/{n_episodes} ({(n_wins/n_episodes)*100:.2f}%)"
+            epsilon_info = f"epsilon: {agent.actor._current_epsilon if agent._training else '0 (training=False)'}"
+            tf.print(f"{ep_info:22}   {wins_info:24}   {epsilon_info}")
+    return episode_reporter

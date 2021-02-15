@@ -9,11 +9,11 @@ from environment import PegEnvironment
 
 
 config = {
-    "n_episodes": 300,
+    "n_episodes": 1000,
     "reset_on_explore": True,
 
     "environment_type": PegEnvironment.TRIANGLE,
-    "critic_type": Critic.NETWORK,
+    "critic_type": Critic.TABLE,
 
     "environment_params": {
         "board_size": 6,
@@ -30,6 +30,7 @@ config = {
         "decay_rate": 0.9,
         "discount_rate": 0.99,
         "epsilon": 0.7,
+        "epsilon_min": 0,
         "epsilon_decay": 0.99,
     },
 }
@@ -60,11 +61,17 @@ def main():
         actor = Actor(env, **actor_params, reset_on_explore=reset_on_explore)
         agent = ActorCriticAgent(env, actor, critic)
         agent.set_callbacks(
-            on_episode_end=logger.on_episode_end, on_step_end=logger.on_step_end
+            on_episode_end=[logger.episode_logger, logger.episode_reporter_wrapper(freq=50)],
+            on_step_end=[logger.step_logger]
         )
 
         # Run experiments
+        print(f"\n{'Training':^80}\n" + "="*80)
         agent.run(n_episodes)
+
+        # Evaluate
+        print(f"\n{'Evaluation':^80}\n" + "="*80)
+        agent.run(200, training=False)
 
         # Collect logs
         df_episodes = pd.DataFrame(logger.episode_logs)

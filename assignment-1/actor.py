@@ -18,7 +18,7 @@ class Actor:
     """
 
     def __init__(self, env, alpha=0.01, decay_rate=0.9, discount_rate=0.9, 
-                 epsilon=0.5, epsilon_decay=0.999, reset_on_explore=True):
+                 epsilon=0.5, epsilon_min=0, epsilon_decay=0.999, reset_on_explore=True):
         self.env = env
 
         # Eligibility
@@ -31,10 +31,11 @@ class Actor:
         self.alpha = alpha
         self.episode = 0
         self.epsilon = epsilon
+        self.epsilon_min = epsilon_min
         self.epsilon_decay = epsilon_decay
         self.reset_on_explore = reset_on_explore
 
-    def __call__(self, state):
+    def __call__(self, state, training=True):
         """Returns the actors' proposed action for a given state."""
         # Fetch legal actions from environment
         legal_actions = self.env.get_legal_actions()
@@ -44,8 +45,8 @@ class Actor:
             self.eligibility.setdefault(sap, 0)
 
         # Determine action based on policy
-        adjusted_epsilon = self.epsilon * self.epsilon_decay ** self.episode
-        if np.random.random() < adjusted_epsilon:
+        self._current_epsilon = max(self.epsilon * self.epsilon_decay ** self.episode, self.epsilon_min)
+        if (np.random.random() < self._current_epsilon) and training:
             action = legal_actions[np.random.choice(len(legal_actions))]
             return action, True
         else:
