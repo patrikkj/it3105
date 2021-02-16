@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 step_logs = []
-def step_logger(agent, episode, step):
+def step_logger(agent, episode, step=0):
     series = {}
     series["episode"] = episode
     series["step"] = step
@@ -22,7 +22,7 @@ def episode_logger(agent, episode):
     episode_logs.append(series)
 
 def episode_reporter_wrapper(freq=50):
-    def episode_reporter(agent, episode):
+    def episode_reporter(agent, episode, freq=50):
         if episode % freq == 0:
             latest = episode_logs[-freq:]
             n_episodes = len(latest)
@@ -32,5 +32,6 @@ def episode_reporter_wrapper(freq=50):
             ep_info = f"Episode {(episode + 1) - n_episodes} -  {episode}"
             wins_info = f"wins: {n_wins}/{n_episodes} ({(n_wins/n_episodes)*100:.2f}%)"
             epsilon_info = f"epsilon: {agent.actor._current_epsilon if agent._training else '0 (training=False)'}"
-            tf.print(f"{ep_info:22}   {wins_info:24}   {epsilon_info}")
+            table_info = f"𝛑-table size: {len(agent.actor.policy)}"
+            tf.print(f"{ep_info:22}  {wins_info:24}  {epsilon_info:30}  {table_info}")
     return episode_reporter

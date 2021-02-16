@@ -1,7 +1,8 @@
 from abc import abstractmethod
-
 import numpy as np
 import tensorflow as tf
+
+tf.get_logger().setLevel('ERROR')
 
 
 class Critic:
