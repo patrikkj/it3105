@@ -4,6 +4,7 @@ import pandas as pd
 import math
 from utils import Direction
 import time
+import numpy as np
 
 D = Direction
 TRIANGLE_DIRECTIONS = [D.UP_LEFT, D.UP, D.LEFT, D.RIGHT, D.DOWN, D.DOWN_RIGHT]
@@ -28,7 +29,7 @@ class Graphics():
         self.board_size = 0
         self.initialized = False
         self.G = nx.Graph()
-        self.testGame()
+        #self.testGame()
         self.step = 0
     
     def testGame(self):
@@ -36,12 +37,6 @@ class Graphics():
             self.game = [{"board" : [1,1,1,1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,1,1,1,    1,1,0,1,1,1,1,1,1,1,1,   1,1,1,1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,1,1,1,     1,1,1,1,1,1,1,1,1,1,1,       1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,     1,1,1,1,1,1,1,1,1,1,1,       1,1,1,1,1,1,1,1,1,1,1], "peg_start_position": None, "peg_end_position" : None},
                         {"board" : [0,1,1,1,1,1,1,1,1,1,1,    1,0,1,1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,1,1,1,  1,1,1,1,1,1,1,1,1,1,1,     1,1,1,1,1,1,1,1,1,1,1,       1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,     1,1,1,1,1,1,1,1,1,1,1,       1,1,1,1,1,1,1,1,1,1,1], "peg_start_position" : (0,0) , "peg_end_position" : (2,2)},
                         {"board" : [0,1,1,1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,1,1,1,    1,0,1,1,1, 1,1,1,1,1,1,   1,0,1,1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,1,1,1,  1,1,1,1,1,1,1,1,1,1,1,     1,1,1,1,1,1,1,1,1,1,1,       1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,     1,1,1,1,1,1,1,1,1,1,1,       1,1,1,1,1,1,1,1,1,1,1], "peg_start_position": (3,1), "peg_end_position" : (1,1)}]
-                      
-            
-            
-            
-            
-            
             """
             self.game = [{"board" : [1,1,1,1,1, 1,1,1,1,1,  1,1,0,1,1,  1,1,1,1,1,  1,1,1,1,1], "peg_start_position": None, "peg_end_position" : None},
                         {"board" : [0,1,1,1,1,  1,0,1,1,1,  1,1,1,1,1,  1,1,1,1,1,  1,1,1,1,1], "peg_start_position" : (0,0) , "peg_end_position" : (2,2)},
@@ -56,13 +51,24 @@ class Graphics():
             """
     def visualize_episode(self, step_logs, board_type, episode, delay):
         """Initializes and runs visualize_game on correct episode. Called by other classes."""
-
-        plt.ion()
+        plt.ion()                                                                                        #interactive mode pyplot for updating graph plot
         self.delay = delay
         self.board_type = board_type
         self.directions = TRIANGLE_DIRECTIONS if self.board_type == "triangle" else DIAMOND_DIRECTIONS
-        self.visualize_game()
+        
+        # Filters step_logs to correct episode and converts to dict
+        self.game = step_logs[step_logs["episode"] == episode]
+        print(self.game)
+        self.game = self.game.to_dict(orient="records")
 
+        # Convert from numpy types
+        for step in self.game:
+            step["board"] = (np.concatenate( step["board"], axis=0)).tolist()
+            step["peg_start_position"] = tuple(step["peg_start_position"])
+            step["peg_end_position"] = tuple(step["peg_end_position"])
+            step["peg_move_direction"] = tuple(step["peg_move_direction"])
+
+        self.visualize_game()
     
     def visualize_game(self):
         """Loops through the step_states of the chosen episode and visualizes each step_state. """
@@ -74,7 +80,6 @@ class Graphics():
                 self.visualize(step_state)
 
             self.step += 1
-
 
     def visualize(self, step_state):
         # Update value for cells that have changed, i.e. the ones involved in the peg move
@@ -118,16 +123,14 @@ class Graphics():
         #degree = 0
         # Collect lists of node colors and node_sizes that will be arguments in the nx.draw_networkx function
         for node in self.G.nodes(data=True):
-            print(node)
+            #print("node: ", node)
             color_list.append(node[1]["node_color"])
             size_list.append(node[1]["node_size"])
             first_pos_list[node[0]] = node[0]
         
         # Edges         
         edges = self.G.edges()
-        print(edges)
         edge_colors = [self.G[u][v]["edge_color"] for u,v in edges]
-        print(edge_colors)
 
         # Dict of positions of each node with node index as key. Rotated and sheared (if triangle) coordinates that will be for the pos argument in nx.draw_networkx function
         for pos in first_pos_list:
@@ -135,7 +138,7 @@ class Graphics():
             pos_dict[pos] = (row,col)
 
         fig = plt.figure("Peg Solitaire")
-        nx.draw_networkx(self.G, pos=pos_dict, node_color = color_list, node_size = size_list, edge_color = edge_colors)
+        nx.draw_networkx(self.G, pos=pos_dict, with_labels= False, node_color = color_list, node_size = size_list, edge_color = edge_colors)
         if final:
             plt.pause(1000000)
         else:
@@ -167,7 +170,6 @@ class Graphics():
         col_index = 0
         board_list = init_state["board"]
         self.board_size = int(math.sqrt(len(board_list)))
-
         #Generate nodes and add to graph
         for cell in board_list:
             # If triangle, only add valid nodes
@@ -194,7 +196,7 @@ class Graphics():
         self.show_graph(len(self.game)<=1)
 
 
-test = Graphics()
-test.visualize_episode(test.game, "triangle", 1, 0.5)
+#test = Graphics()
+#test.visualize_episode(test.game, "triangle", 1, 0.5)
 
 

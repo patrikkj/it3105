@@ -6,22 +6,24 @@ from actor import Actor
 from critic import Critic
 from agent import ActorCriticAgent
 from environment import PegEnvironment
+from graphics import Graphics
 
 
 config = {
     "n_episodes": 1000,
     "reset_on_explore": True,
+    "delay" : 0.6,
 
     "environment_type": PegEnvironment.TRIANGLE,
     "critic_type": Critic.TABLE,
 
     "environment_params": {
         "board_size": 6,
-        "holes": [(2, 2)],
+        "holes": [(2,2)],
     },
     "critic_params": {
         "layer_dims": (10, 15, 5, 1),   # Ignored if not using Network critc
-        "alpha": 1e-14,                  # 1e-4 for Network, 0.3 for table
+        "alpha": 1e-4,                  # 1e-4 for Network, 0.3 for table
         "decay_rate": 0.9,
         "discount_rate": 0.99,
     },
@@ -43,14 +45,15 @@ def main():
     reset_on_explore = config["reset_on_explore"]
 
     critic_type = config["critic_type"]
-    evironment_type = config["environment_type"]
+    environment_type = config["environment_type"]
+    delay = config["delay"]
 
     environment_params = config["environment_params"]
     critic_params = config["critic_params"]
     actor_params = config["actor_params"]
 
     # Run experiment
-    with PegEnvironment.from_type(evironment_type, **environment_params) as env:
+    with PegEnvironment.from_type(environment_type, **environment_params) as env:
         # Print initial board
         print(env.board)
 
@@ -76,9 +79,11 @@ def main():
         # Collect logs
         df_episodes = pd.DataFrame(logger.episode_logs)
         df_steps = pd.DataFrame(logger.step_logs)
-
-        # Plot progression, if any... hehe :)
+        #with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+        #    print(df_steps[0:20])        # Plot progression, if any... hehe :)
         df_episodes["n_pegs_left"].plot()
+        graphics = Graphics()
+        graphics.visualize_episode(df_steps, environment_type,df_steps.iloc[-1]["episode"], delay)
         plt.show()
 
 
