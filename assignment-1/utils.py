@@ -22,8 +22,6 @@ class Direction(Enum):
     DOWN_RIGHT = ([1, 1], (1 << 10) + (1 << 11) + (1 << 1))
     DOWN_LEFT = ([1, -1], (1 << 14) + (1 << 15) + (1 << 1))
 
-
-
     @property
     def vector(self):
         return self.value[0]

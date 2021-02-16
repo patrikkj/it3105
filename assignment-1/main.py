@@ -12,16 +12,16 @@ config = {
     "n_episodes": 1000,
     "reset_on_explore": True,
 
-    "environment_type": PegEnvironment.TRIANGLE,
+    "environment_type": PegEnvironment.DIAMOND,
     "critic_type": Critic.TABLE,
 
     "environment_params": {
-        "board_size": 6,
-        "holes": [(2, 2)],
+        "board_size": 4,
+        "holes": [(2, 1)],
     },
     "critic_params": {
         "layer_dims": (10, 15, 5, 1),   # Ignored if not using Network critc
-        "alpha": 1e-14,                  # 1e-4 for Network, 0.3 for table
+        "alpha": 1e-4,                  # 1e-4 for Network, 0.3 for table
         "decay_rate": 0.9,
         "discount_rate": 0.99,
     },
