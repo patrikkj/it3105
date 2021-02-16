@@ -139,6 +139,14 @@ class PegEnvironment(Environment):
         self._is_terminal = False
         self._step = 0
 
+        # Reset caching of previous moves
+        self._peg_start_position = None
+        self._peg_end_position = None
+        self._peg_move_direction = None
+
+        if len(self._actions) == 0:
+            raise EnvironmentError("There are no legal actions for the initial configuration!")
+
     def is_terminal(self):
         """Determines whether the given state is a terminal state."""
         return self._is_terminal

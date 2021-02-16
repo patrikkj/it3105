@@ -10,21 +10,29 @@ class ActorCriticAgent:
         self.critic = critic    # We should initialize critic with small random values
 
         # Callbacks for logging (self -> ...)
-        self.on_episode_end = []
-        self.on_step_end = []
+        self.on_episode_begin = []  # Format: (agent, episode) -> ...
+        self.on_episode_end = []    # Format: (agent, episode) -> ...
+        self.on_step_end = []       # Format: (agent, episode, step) -> ...
         self._current_episode = 0
 
-    def set_callbacks(self, on_episode_end=None, on_step_end=None):
-        if on_episode_end:
+    def set_callbacks(self, on_episode_begin=None,  on_episode_end=None, on_step_end=None):
+        if on_episode_begin is not None:
+            self.on_episode_begin = on_episode_begin
+        if on_episode_end is not None:
             self.on_episode_end = on_episode_end
-        if on_step_end:
+        if on_step_end is not None:
             self.on_step_end = on_step_end
 
     def run(self, num_episodes, training=True):
         for _ in range(num_episodes):
+            # Callbacks for episode start
+            for callback in self.on_episode_begin:
+                callback(self, self._current_episode)
+
+            # Run episode
             self.episode(training=training)
         
-            # Callbacks
+            # Callbacks for episode end
             for callback in self.on_episode_end:
                 callback(self, self._current_episode)
         

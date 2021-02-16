@@ -1,7 +1,8 @@
 from abc import abstractmethod
-
 import numpy as np
 import tensorflow as tf
+
+tf.get_logger().setLevel('ERROR')
 
 
 class Critic:
@@ -126,16 +127,20 @@ class CriticNetwork(Critic):
         reshaped = tf.reshape(tensor, shape=(1, -1))
         return self.model(reshaped)
 
-    def td_error(self, r, s, s_next):
-        """Returns the temporal difference (TD) error."""
-        return r + self.discount_rate * self(s_next) - self(s)
+    def td_error(self, reward, state, state_next):
+        """
+        Returns the temporal difference (TD) error.
+             𝛿 = rₜ₊₁ + γ * Vθ(sₜ₊₁) − Vθ(sₜ)
+        """
+        return reward + self.discount_rate * self(state_next) - self(state)
 
     def _build_model(self):
+        """Builds the Keras mudel used as a state-value approximator."""
         model = tf.keras.Sequential()
         model.add(tf.keras.layers.Input(shape=len(self.env.get_observation())))
         for units in self.layer_dims:
             model.add(tf.keras.layers.Dense(units, activation="relu"))
-        optimizer = tf.keras.optimizers.Adam(learning_rate=self.alpha)
+        optimizer = tf.keras.optimizers.SGD(learning_rate=self.alpha)
         model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
         return model
 
@@ -143,32 +148,20 @@ class CriticNetwork(Critic):
         self.eligibility = [tf.Variable(tf.zeros_like(weights)) for weights in self.model.trainable_weights]
 
     def update_eligibility(self, state):
-        #tensor = tf.convert_to_tensor(state)
-        weights = self.model.trainable_weights
-
         # Wraps tf.ops to record operations such that gradients can be calculated
         with tf.GradientTape() as tape: 
             value = self(state)
-        gradients = tape.gradient(value, weights)
+        gradients = tape.gradient(value, self.model.trainable_weights)
 
-        # Update eligibility traces
-        for i in range(len(self.eligibility)):
-            self.eligibility[i] = self.eligibility[i] *  self.decay_rate
-            self.eligibility[i] = tf.math.add(self.eligibility[i], gradients[i])
+        # Applies the eligibility update rule for Semi-Gradient Descent with TD.
+        self.eligibility = [e * self.discount_rate * self.decay_rate for e in self.eligibility]
+        self.eligibility = [e + dW for e, dW in zip(self.eligibility, gradients)]
 
     def update_weights(self, error):
         weights = self.model.trainable_weights
-        error = tf.reshape(error * 1000, -1)
-        weight_adjustment = [self.eligibility[i] * error for i in range(len(weights))]
-        self.model.optimizer.apply_gradients(zip(weight_adjustment, weights))
-
-        #print(error)
-        #before_weights = [w.numpy() for w in weights]
-        #print(self.env.get_observation())
-        #after_weights = [w.numpy() for w in weights]
-        #diffs = [np.abs(w1 - w2).sum() for w1, w2 in zip(before_weights, after_weights)]
-        #print(sum(diffs))
-
+        error = tf.reshape(error, -1)
+        weight_update = [error * e for e in self.eligibility]
+        self.model.optimizer.apply_gradients(zip(weight_update, weights))
 
     def update(self, state, error, is_exploring):
         if is_exploring:

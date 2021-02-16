@@ -1,3 +1,4 @@
+import json
 from enum import Enum
 from typing import NamedTuple
 import numpy as np
@@ -21,8 +22,6 @@ class Direction(Enum):
     UP_RIGHT = ([-1, 1], (1 << 6) + (1 << 7) + (1 << 1))
     DOWN_RIGHT = ([1, 1], (1 << 10) + (1 << 11) + (1 << 1))
     DOWN_LEFT = ([1, -1], (1 << 14) + (1 << 15) + (1 << 1))
-
-
 
     @property
     def vector(self):
@@ -49,3 +48,12 @@ kernel = np.exp2(kernel)[::-1, ::-1] * (kernel != 0)
 edge_mask = kernel.copy()
 edge_mask[1:-1, 1:-1] = 0                   # Clears non-edge values
 edge_mask = edge_mask.sum().astype(int)     # Encode edge values in a bit pattern represented by an integer
+
+
+def write_config(config, filepath):
+    with open(filepath, "w") as f:
+        json.dump(config, f, indent=4)
+
+def read_config(filepath):
+    with open(filepath, "r") as f:
+        return json.load(open(filepath))
