@@ -11,8 +11,6 @@ def step_logger(agent, episode, step=0):
     series["peg_move_direction"] = agent.env._peg_move_direction
     series["peg_start_position"] = agent.env._peg_start_position
     series["peg_end_position"] = agent.env._peg_end_position
-    if episode == 5:
-        series["td_error"] = agent._error
     step_logs.append(series)
 
 episode_logs = []
@@ -23,15 +21,14 @@ def episode_logger(agent, episode, final=False):
     series["n_pegs_left"] = agent.env.get_pegs_left()
     episode_logs.append(series)
 
-last_reported = 0
+REPORT_FREQ = 50
 reporter_vars = {
     "last_reported": 0
 }
-def episode_reporter(agent, episode, final=False, freq=50):
+def episode_reporter(agent, episode, final=False):
     n_episodes = episode - reporter_vars["last_reported"]
-    if (n_episodes >= freq) or final:
+    if (n_episodes >= REPORT_FREQ) or final:
         latest = episode_logs[-n_episodes:]
-        print(latest)
         n_pegs = [series["n_pegs_left"] for series in latest]
         n_wins = sum(n == 1 for n in n_pegs)
 

@@ -35,7 +35,6 @@ class Graphics:
         
         #Generate nodes and add to graph
         for indices in self.env._valid_indices:
-            print(indices)
             value = board[indices]
             self.G.add_node(indices, **{'value': value, 'node_color': node_colors[value], 'node_size': NORMAL})
 
@@ -79,7 +78,6 @@ class Graphics:
         #Loops through the step_states of the chosen episode and visualizes each step_state. """
         for step, step_state in enumerate(self.game[1:], start=1):
             self.visualize_step(step, step_state)
-            print(step_state)
 
     def visualize_step(self, step, step_state):
         # Update value for cells that have changed, i.e. the ones involved in the peg move

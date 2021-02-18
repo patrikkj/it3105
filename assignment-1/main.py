@@ -9,6 +9,7 @@ from critic import Critic
 from environment import PegEnvironment
 import graphics
 
+
 config = {
     "n_episodes": 2000,
     "reset_on_explore": True,
@@ -40,7 +41,7 @@ config = {
 }
 
 # Config IO handling
-filepath = "./assignment-1/cases/triangle_table_5.json"
+filepath = "./assignment-1/cases/triangle_network_5.json"
 mode = "read"   # "read" or "write"
 
 if mode == "read":
