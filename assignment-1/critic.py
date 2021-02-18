@@ -19,12 +19,15 @@ class Critic:
         self.discount_rate = discount_rate
         self.reset_on_explore = reset_on_explore
     
-    @abstractmethod
-    def __call__(self, state):
-        ...
+    def td_error(self, reward, state, state_next):
+        """
+        Returns the temporal difference (TD) error.
+             𝛿 = rₜ₊₁ + γ * Vθ(sₜ₊₁) − Vθ(sₜ)
+        """
+        return reward + self.discount_rate * self(state_next) - self(state)
 
     @abstractmethod
-    def td_error(self, r, s, s_next):
+    def __call__(self, state):
         ...
 
     @abstractmethod
@@ -76,10 +79,6 @@ class CriticTable(Critic):
         self.eligibility.setdefault(state, 0)
         return self.V.setdefault(state, np.random.uniform(0.05, 0.1))
 
-    def td_error(self, r, s, s_next):
-        """Returns the temporal difference (TD) error."""
-        return r + self.discount_rate * self(s_next) - self(s)
-
     def reset_eligibility(self):
         self.eligibility = {}
 
@@ -128,13 +127,6 @@ class CriticNetwork(Critic):
         tensor = tf.convert_to_tensor(decoded)
         reshaped = tf.reshape(tensor, shape=(1, -1))
         return self.model(reshaped)
-
-    def td_error(self, reward, state, state_next):
-        """
-        Returns the temporal difference (TD) error.
-             𝛿 = rₜ₊₁ + γ * Vθ(sₜ₊₁) − Vθ(sₜ)
-        """
-        return reward + self.discount_rate * self(state_next) - self(state)
 
     def _build_model(self):
         """Builds the Keras mudel used as a state-value approximator."""

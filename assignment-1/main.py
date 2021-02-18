@@ -1,14 +1,16 @@
+import json, graphics, utils, logger
 import matplotlib.pyplot as plt
 import pandas as pd
-
-import logger, json
-import utils
 from actor import Actor
 from agent import ActorCriticAgent
 from critic import Critic
 from environment import PegEnvironment
-import graphics
+from utils import Cases
 
+
+# Config IO handling
+case = Cases.DIAMOND_TABLE_4.value
+mode = "read"   # "read", "write" or ""
 
 config = {
     "n_episodes": 2000,
@@ -40,17 +42,14 @@ config = {
     },
 }
 
-# Config IO handling
-filepath = "./assignment-1/cases/triangle_network_5.json"
-mode = "read"   # "read" or "write"
-
-if mode == "read":
-    config = utils.read_config(filepath)
-elif mode == "write":
-    utils.write_config(config, filepath)
-
 
 def main():
+    # Read/write configuration file
+    if mode == "read":
+        config = utils.read_config(case)
+    elif mode == "write":
+        utils.write_config(config, case)
+
     # Unpack configuration
     n_episodes = config["n_episodes"]
     reset_on_explore = config["reset_on_explore"]
@@ -97,6 +96,8 @@ def main():
         # Collect logs
         df_episodes = pd.DataFrame(logger.episode_logs)
         df_steps = pd.DataFrame(logger.step_logs)
+
+        # Visualize
         df_episodes["n_pegs_left"].plot()
         for episode in visualize_episodes:
             graphics.Graphics(env, df_steps, delay).visualize_episode(episode=episode)

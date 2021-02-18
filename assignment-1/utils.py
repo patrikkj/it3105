@@ -32,6 +32,23 @@ class Direction(Enum):
         return self.value[1]
 
 
+class Cases(Enum):
+    DIAMOND_NETWORK_4 = "./assignment-1/cases/diamond_network_4.json"
+    DIAMOND_TABLE_4 = "./assignment-1/cases/diamond_table_4.json"
+    TRIANGLE_NETWORK_5 = "./assignment-1/cases/triangle_network_5.json"
+    TRIANGLE_TABLE_5 = "./assignment-1/cases/triangle_table_5.json"
+
+
+def write_config(config, filepath):
+    with open(filepath, "w+") as f:
+        json.dump(config, f, indent=4)
+
+
+def read_config(filepath):
+    with open(filepath, "r") as f:
+        return json.load(open(filepath))
+
+
 # Construct 2D-kernel used for move generation
 _ = 0
 kernel = np.array([
@@ -43,17 +60,7 @@ kernel = np.array([
 ])
 kernel = np.exp2(kernel)[::-1, ::-1] * (kernel != 0)
 
-
 # Create edge mask - sum of entries on the kernels' circumference
 edge_mask = kernel.copy()
 edge_mask[1:-1, 1:-1] = 0                   # Clears non-edge values
 edge_mask = edge_mask.sum().astype(int)     # Encode edge values in a bit pattern represented by an integer
-
-
-def write_config(config, filepath):
-    with open(filepath, "w+") as f:
-        json.dump(config, f, indent=4)
-
-def read_config(filepath):
-    with open(filepath, "r") as f:
-        return json.load(open(filepath))

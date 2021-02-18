@@ -139,8 +139,6 @@ class PegEnvironment(Environment):
         """Returns the agents' perceivable state of the environment."""
         return self.board[self._mask].astype(bool).tobytes()
 
-
-
     def get_legal_actions(self):
         return self._actions
 
