@@ -14,7 +14,7 @@ LARGE = 400
 node_colors = {0 : 'black', 1: "blue"}
 rotation = {
     "PegEnvironmentTriangle": -1/2 * math.pi, 
-    "PegEnvironmentDiamond" : -1/4 * math.pi
+    "PegEnvironmentDiamond" : 3/4 * math.pi
 }
 
 
