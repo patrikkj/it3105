@@ -21,6 +21,10 @@ class Environment:
     @abstractmethod
     def is_terminal(self):
         ...
+        
+    @abstractmethod
+    def get_legal_actions(self):
+        ...
 
     @abstractmethod
     def get_observation(self):
@@ -32,7 +36,7 @@ class Environment:
         Overload this method if 'self.get_observation()' 
         returns a compressed state representation.
         """
-        return state
+        ...
 
     def __enter__(self):
         return self
@@ -58,6 +62,9 @@ class PegEnvironment(Environment):
         self._mask = self._board.astype(bool)
         self._total_cells = self._mask.sum()
 
+        # Create a list of all valid indices, handy for iterating over all valid cells
+        self._valid_indices = tuple(zip(*self._mask.nonzero()))
+
         # The broadcasted matrix is |directions| boards filled with the constant (bitpattern) for each direction
         self.dir_matrix = np.array([d.kernel for d in self.directions]).reshape((1, 1, -1))
 
@@ -75,15 +82,18 @@ class PegEnvironment(Environment):
         self.board[vector[0], vector[1]] = value
 
     def _assign_holes(self):
+        """Pokes a few holes in the board."""
         for hole in self.holes:
             self._set_cell(hole, value=0)
 
     def step(self, action):
         """
         Apply action to this environment.
+
         Returns:
             observation (object): an environment-specific object representing your observation of the environment.
             reward (float): amount of reward achieved by the previous action.
+            is_terminal (bool): whether the state is a terminal state
         """
         # Perform action
         x, y, direction_index = action
@@ -112,6 +122,7 @@ class PegEnvironment(Environment):
         return self.get_observation(), reward, self._is_terminal
 
     def calculate_reward(self):
+        """Determinse the reward for the most recent step."""
         if self._is_terminal and self._pegs_left == 1:
             reward = PegEnvironment.REWARD_WIN
         elif self._is_terminal:
@@ -121,11 +132,14 @@ class PegEnvironment(Environment):
         return reward
 
     def get_pegs_left(self):
+        """Returns the number of peges left on the board."""
         return self._pegs_left
 
     def get_observation(self):
         """Returns the agents' perceivable state of the environment."""
         return self.board[self._mask].astype(bool).tobytes()
+
+
 
     def get_legal_actions(self):
         return self._actions
@@ -144,6 +158,7 @@ class PegEnvironment(Environment):
         self._peg_end_position = None
         self._peg_move_direction = None
 
+        # Assert that initial configuration is valid
         if len(self._actions) == 0:
             raise EnvironmentError("There are no legal actions for the initial configuration!")
 
@@ -152,6 +167,7 @@ class PegEnvironment(Environment):
         return self._is_terminal
 
     def decode_state(self, state):
+        # bytestring -> np.array([0, 1, 1, 0, 0, 1])
         return np.frombuffer(state, dtype=np.uint8)
 
     @staticmethod

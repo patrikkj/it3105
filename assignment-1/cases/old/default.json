@@ -1,0 +1,35 @@
+{
+    "n_episodes": 5,
+    "reset_on_explore": true,
+    "delay": 0.1,
+    "environment_type": "triangle",
+    "critic_type": "network",
+    "environment_params": {
+        "board_size": 6,
+        "holes": [
+            [
+                2,
+                2
+            ]
+        ]
+    },
+    "critic_params": {
+        "layer_dims": [
+            10,
+            15,
+            5,
+            1
+        ],
+        "alpha": 0.3,
+        "decay_rate": 0.9,
+        "discount_rate": 0.99
+    },
+    "actor_params": {
+        "alpha": 0.15,
+        "decay_rate": 0.9,
+        "discount_rate": 0.99,
+        "epsilon": 0.8,
+        "epsilon_min": 0.1,
+        "epsilon_decay": 0.99
+    }
+}

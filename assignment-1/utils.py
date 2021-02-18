@@ -51,7 +51,7 @@ edge_mask = edge_mask.sum().astype(int)     # Encode edge values in a bit patter
 
 
 def write_config(config, filepath):
-    with open(filepath, "w") as f:
+    with open(filepath, "w+") as f:
         json.dump(config, f, indent=4)
 
 def read_config(filepath):

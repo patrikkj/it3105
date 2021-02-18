@@ -2,6 +2,7 @@ from abc import abstractmethod
 import numpy as np
 import tensorflow as tf
 
+np.random.seed(1)
 tf.get_logger().setLevel('ERROR')
 
 
@@ -137,11 +138,12 @@ class CriticNetwork(Critic):
     def _build_model(self):
         """Builds the Keras mudel used as a state-value approximator."""
         model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Input(shape=len(self.env.get_observation())))
+        input_spec = self.env.decode_state(self.env.get_observation()).size
+        model.add(tf.keras.layers.Input(shape=(input_spec, )))
         for units in self.layer_dims:
             model.add(tf.keras.layers.Dense(units, activation="relu"))
         optimizer = tf.keras.optimizers.SGD(learning_rate=self.alpha)
-        model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
+        model.compile(optimizer=optimizer, loss="mse")
         return model
 
     def reset_eligibility(self):
@@ -149,7 +151,7 @@ class CriticNetwork(Critic):
 
     def update_eligibility(self, state):
         # Wraps tf.ops to record operations such that gradients can be calculated
-        with tf.GradientTape() as tape: 
+        with tf.GradientTape() as tape:
             value = self(state)
         gradients = tape.gradient(value, self.model.trainable_weights)
 
@@ -158,8 +160,12 @@ class CriticNetwork(Critic):
         self.eligibility = [e + dW for e, dW in zip(self.eligibility, gradients)]
 
     def update_weights(self, error):
+        """
+        Applies the weight update rule:
+            w = w + learning_rate * error * e
+        """
         weights = self.model.trainable_weights
-        error = tf.reshape(error, -1)
+        error = tf.reshape(-error, -1)
         weight_update = [error * e for e in self.eligibility]
         self.model.optimizer.apply_gradients(zip(weight_update, weights))
 

@@ -1,29 +1,31 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-import logger
+import logger, json
 import utils
 from actor import Actor
 from agent import ActorCriticAgent
 from critic import Critic
 from environment import PegEnvironment
-from graphics import Graphics
+import graphics
 
 config = {
-    "n_episodes": 300,
+    "n_episodes": 2000,
     "reset_on_explore": True,
-    "delay" : 0.6,
+
+    "visualize_episodes": [-1],
+    "delay" : 0.2,
 
     "environment_type": PegEnvironment.TRIANGLE,
     "critic_type": Critic.TABLE,
 
     "environment_params": {
-        "board_size": 6,
-        "holes": [(2,2)],
+        "board_size": 5,
+        "holes": [(2, 2)], 
     },
     "critic_params": {
         "layer_dims": (10, 15, 5, 1),   # Ignored if not using Network critc
-        "alpha": 1e-4,                  # 1e-4 for Network, 0.3 for table
+        "alpha": 0.3,                   # 1e-2 for Network, 0.3 for table
         "decay_rate": 0.9,
         "discount_rate": 0.99,
     },
@@ -31,18 +33,18 @@ config = {
         "alpha": 0.15,
         "decay_rate": 0.9,
         "discount_rate": 0.99,
-        "epsilon": 0.8,
-        "epsilon_min": 0.1,
+        "epsilon": 0.5,
+        "epsilon_min": 0.03,
         "epsilon_decay": 0.99,
     },
 }
 
 # Config IO handling
-filepath = "./assignment-1/cases/default.json"
-mode = "write"   # "read" or "write"
+filepath = "./assignment-1/cases/triangle_table_5.json"
+mode = "read"   # "read" or "write"
 
 if mode == "read":
-    utils.read_config(filepath)
+    config = utils.read_config(filepath)
 elif mode == "write":
     utils.write_config(config, filepath)
 
@@ -51,10 +53,11 @@ def main():
     # Unpack configuration
     n_episodes = config["n_episodes"]
     reset_on_explore = config["reset_on_explore"]
+    visualize_episodes = config["visualize_episodes"]
+    delay = config["delay"]
 
     critic_type = config["critic_type"]
     environment_type = config["environment_type"]
-    delay = config["delay"]
 
     environment_params = config["environment_params"]
     critic_params = config["critic_params"]
@@ -63,7 +66,12 @@ def main():
     # Run experiment
     with PegEnvironment.from_type(environment_type, **environment_params) as env:
         # Print initial board
+        print(f"\n{'Initial board':^100}\n" + "="*100)
         print(env.board)
+
+        # Print configuration
+        print(f"\n{'Configuration':^100}\n" + "="*100)
+        print(json.dumps(config, indent=4))
 
         # Configure agent
         critic = Critic.from_type(
@@ -73,34 +81,24 @@ def main():
         agent = ActorCriticAgent(env, actor, critic)
         agent.set_callbacks(
             on_episode_begin=[logger.step_logger],
-            on_episode_end=[logger.episode_logger, logger.episode_reporter_wrapper(freq=50)],
+            on_episode_end=[logger.episode_logger, logger.episode_reporter],
             on_step_end=[logger.step_logger]
         )
 
         # Run experiments
-        print(f"\n{'Training':^80}\n" + "="*100)
-        agent.run(n_episodes)
+        print(f"\n{'Training':^100}\n" + "="*100)
+        agent.fit(n_episodes)
 
         # Evaluate
-        print(f"\n{'Evaluation':^80}\n" + "="*100)
-        agent.run(100, training=False)
+        print(f"\n{'Evaluation':^100}\n" + "="*100)
+        agent.evaluate(50)
 
         # Collect logs
         df_episodes = pd.DataFrame(logger.episode_logs)
         df_steps = pd.DataFrame(logger.step_logs)
-        #with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
-        #    print(df_steps[0:20])        # Plot progression, if any... hehe :)
         df_episodes["n_pegs_left"].plot()
-        graphics = Graphics()
-        graphics.visualize_episode(df_steps, environment_type,df_steps.iloc[-1]["episode"], delay)
+        for episode in visualize_episodes:
+            graphics.Graphics(env, df_steps, delay).visualize_episode(episode=episode)
         plt.show()
 
-
-def debug():
-    import cProfile
-    with cProfile.Profile() as pr:
-        main()
-    pr.print_stats(sort=1)
-
-
-main()
+main()  

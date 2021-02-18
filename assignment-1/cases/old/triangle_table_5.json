@@ -1,14 +1,18 @@
 {
-    "n_episodes": 300,
+    "n_episodes": 600,
     "reset_on_explore": true,
+    "visualize_episodes": [
+        -1
+    ],
+    "delay": 0.2,
     "environment_type": "triangle",
-    "critic_type": "table",
+    "critic_type": "network",
     "environment_params": {
-        "board_size": 6,
+        "board_size": 5,
         "holes": [
             [
                 2,
-                2
+                1
             ]
         ]
     },
@@ -19,7 +23,7 @@
             5,
             1
         ],
-        "alpha": 0.3,
+        "alpha": 0.01,
         "decay_rate": 0.9,
         "discount_rate": 0.99
     },
@@ -27,8 +31,8 @@
         "alpha": 0.15,
         "decay_rate": 0.9,
         "discount_rate": 0.99,
-        "epsilon": 0.8,
-        "epsilon_min": 0.1,
+        "epsilon": 0.5,
+        "epsilon_min": 0.03,
         "epsilon_decay": 0.99
     }
 }
