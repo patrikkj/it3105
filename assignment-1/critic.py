@@ -163,7 +163,7 @@ class CriticNetwork(Critic):
         self.model.optimizer.apply_gradients(zip(weight_update, weights))
 
     def update(self, state, error, is_exploring):
-        if is_exploring:
+        if is_exploring and self.reset_on_explore:
             self.reset_eligibility()
         self.update_eligibility(state)
         self.update_weights(error)

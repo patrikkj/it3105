@@ -9,7 +9,7 @@ from utils import Cases
 
 
 # Config IO handling
-case = Cases.DIAMOND_TABLE_4.value
+case = Cases.TRIANGLE_TABLE_5.value
 mode = "read"   # "read", "write" or ""
 
 config = {
@@ -42,14 +42,13 @@ config = {
     },
 }
 
+# Read/write configuration file
+if mode == "read":
+    config = utils.read_config(case)
+elif mode == "write":
+    utils.write_config(config, case)
 
 def main():
-    # Read/write configuration file
-    if mode == "read":
-        config = utils.read_config(case)
-    elif mode == "write":
-        utils.write_config(config, case)
-
     # Unpack configuration
     n_episodes = config["n_episodes"]
     reset_on_explore = config["reset_on_explore"]

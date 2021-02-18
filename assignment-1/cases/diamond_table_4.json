@@ -4,7 +4,7 @@
     "visualize_episodes": [
         -1
     ],
-    "delay": 2,
+    "delay": 0.2,
     "environment_type": "diamond",
     "critic_type": "table",
     "environment_params": {
