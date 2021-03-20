@@ -9,7 +9,7 @@ from utils import Cases
 
 
 # Config IO handling
-case = Cases.TRIANGLE_TABLE_5.value
+case = Cases.DIAMOND_TABLE_4.value
 mode = "read"   # "read", "write" or ""
 
 config = {
