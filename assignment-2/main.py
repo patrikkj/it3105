@@ -1,4 +1,4 @@
-from environment import NimEnvironment
+from envs.nim import NimEnvironment
 
 
 configs = {
@@ -22,7 +22,7 @@ def main():
             mover = (mover +1) % 2
             random_move = env.random_move()
             env.move(mover, random_move)
-            print (env.players[mover], " , stones removed: ", random_move, " , Stones remaining: ", env.stones)
+            print(env.players[mover], " , stones removed: ", random_move, " , Stones remaining: ", env.stones)
         
         winner = env.players[env.winner()]
         print("\n")

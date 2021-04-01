@@ -1,3 +1,10 @@
+import numpy as np
+
+from .environment import Environment
+from .hex_grid import DisjointHexGrid, HexFlag
+from .hex_renderer import board2string
+
+
 class HexEnvironment(Environment):
     REWARD_WIN = 500
     REWARD_ACTION = 0
@@ -6,31 +13,20 @@ class HexEnvironment(Environment):
     def __init__(self, board_size=6):
         self.board_size = board_size
 
-        # Create a list of all valid indices, handy for iterating over all valid cells
-        self._valid_indices = tuple(zip(*self._mask.nonzero()))
-
         # Initialize environment state (all initialization is done in self.reset())
         self.reset()
 
-    def _generate_moves(self, player):
-        return np.argwhere(self.board == 0)
-
-    def move(self, action):
-        """
-        Apply action to this environment.
-
-        Returns:
-            observation (object): an environment-specific object representing your observation of the environment.
-            reward (float): amount of reward achieved by the previous action.
-            is_terminal (bool): whether the state is a terminal state
-        """
+    def move(self, action, player):
         # Perform action
-        x, y, player = action
+        x, y = action
         self.board[x, y] = player
-
-        # Determine if terminal state
         self._actions.discard(action)
-        self._is_terminal = bool(self._actions)
+
+        # Apply move to internal representation
+        flags = self.disjoint_hexgrid.move(x, y, player)
+        
+        # Determine if terminal state
+        self._is_terminal = HexFlag.is_win(flags)
 
         # Determine reward
         reward = self.calculate_reward()
@@ -47,6 +43,9 @@ class HexEnvironment(Environment):
         else:
             reward = HexEnvironment.REWARD_ACTION
         return reward
+    
+    def is_finished(self):
+        return self._is_terminal
 
     def get_observation(self):
         """Returns the agents' perceivable state of the environment."""
@@ -57,17 +56,25 @@ class HexEnvironment(Environment):
 
     def reset(self):
         """Resets the environment."""
-        self.board = self._board.copy()
+        self.board = np.zeros((self.board_size, self.board_size), dtype=int)
+        self.disjoint_hexgrid = DisjointHexGrid(self.board_size)
         self._actions = set(map(tuple, np.argwhere(self.board == 0)))
         self._is_terminal = False
         self._step = 0
 
-    def is_terminal(self):
+    def _check_if_terminal(self):
         """Determines whether the given state is a terminal state."""
-        # False if minimum number of moves for a terminal state hasnt been played
-        if self.board.sum()
         return self._is_terminal
 
     def decode_state(self, state):
         # bytestring -> np.array([0, 1, 1, 0, 0, 1])
         return np.frombuffer(state, dtype=np.uint8)
+    
+    def __str__(self):
+        return board2string(self.board)
+
+
+env = HexEnvironment(6)
+env.move((5, 2), player=2)
+env.move((4, 2), player=1)
+print(env)
