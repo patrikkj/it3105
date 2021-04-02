@@ -1,8 +1,10 @@
+from copy import deepcopy
+
 import numpy as np
 
-from .state_manager import StateManager
 from .hex_grid import DisjointHexGrid, HexFlag
 from .hex_renderer import board2string
+from .state_manager import StateManager
 
 
 class HexEnvironment(StateManager):
@@ -62,9 +64,15 @@ class HexEnvironment(StateManager):
         self._is_terminal = False
         self._step = 0
 
-    def _check_if_terminal(self):
-        """Determines whether the given state is a terminal state."""
-        return self._is_terminal
+    def copy(self):
+        obj = object.__new__(self.__class__)
+        obj.board_size = self.board_size
+        obj.board = self.board.copy()
+        obj.disjoint_hexgrid = deepcopy(self.disjoint_hexgrid)
+        obj._actions = self._actions.copy()
+        obj._is_terminal = self._is_terminal
+        obj._step = self._step
+        return obj
 
     def decode_state(self, state):
         # bytestring -> np.array([0, 1, 1, 0, 0, 1])

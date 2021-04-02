@@ -1,6 +1,7 @@
 import numpy as np
 import random
 from abc import abstractmethod
+from copy import deepcopy
 
 class StateManager:
     @abstractmethod
@@ -23,6 +24,13 @@ class StateManager:
     def get_observation(self):
         # NOTE: Observations must be hashable!
         ...
+
+    def copy(self):
+        """
+        Returns a duplicate of the current environment.
+        NOTE: Should be overwritten, deepcopy can be slow for nested structures!
+        """
+        return deepcopy(self)
 
     def decode_state(self, state):
         """
