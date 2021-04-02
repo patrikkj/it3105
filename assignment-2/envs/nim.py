@@ -1,7 +1,7 @@
-from .environment import Environment
+from .state_manager import StateManager
 import random
 
-class NimEnvironment(Environment):
+class NimEnvironment(StateManager):
     REWARD_WIN = 500
     REWARD_ACTION = 0
     REWARD_LOSS = - 100

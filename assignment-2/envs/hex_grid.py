@@ -72,7 +72,7 @@ class DisjointHexGrid:
         return self.find(cell).flags   # Return flag of representative
     
 
-    # ----------- Disjoint set operations ------------------
+    # ----------- Disjoint set operations -----------
     def find(self, x):
         """
         Returns the representative for the disjoint set 'x'.

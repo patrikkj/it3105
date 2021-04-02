@@ -1,11 +1,11 @@
 import numpy as np
 
-from .environment import Environment
+from .state_manager import StateManager
 from .hex_grid import DisjointHexGrid, HexFlag
 from .hex_renderer import board2string
 
 
-class HexEnvironment(Environment):
+class HexEnvironment(StateManager):
     REWARD_WIN = 500
     REWARD_ACTION = 0
     REWARD_LOSS = -500

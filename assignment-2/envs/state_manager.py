@@ -2,7 +2,7 @@ import numpy as np
 import random
 from abc import abstractmethod
 
-class Environment:
+class StateManager:
     @abstractmethod
     def move(self, player, action):
         ...
