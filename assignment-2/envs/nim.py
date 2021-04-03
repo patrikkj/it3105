@@ -1,5 +1,7 @@
-from .state_manager import StateManager
 import random
+
+from .state_manager import StateManager
+
 
 class NimEnvironment(StateManager):
     REWARD_WIN = 500

@@ -1,7 +1,13 @@
-import numpy as np
-import random
 from abc import abstractmethod
 from copy import deepcopy
+from dataclasses import dataclass
+
+
+@dataclass
+class EnvironmentSpec:
+    observations: int
+    actions: int
+
 
 class StateManager:
     @abstractmethod
@@ -23,6 +29,13 @@ class StateManager:
     @abstractmethod
     def get_observation(self):
         # NOTE: Observations must be hashable!
+        ...
+
+    @abstractmethod
+    def spec(self):
+        """Describes the specifications of the managed environment.
+        Should be instance of EnvironmentSpec.
+        """
         ...
 
     def copy(self):
