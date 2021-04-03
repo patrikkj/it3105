@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 **/.vscode
 **/.DS_Store
+**/dump
 assignment-1/dump/network_plotly.ipynb
