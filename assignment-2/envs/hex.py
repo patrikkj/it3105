@@ -148,7 +148,7 @@ class HexEnvironment(StateManager):
         return self.get_observation(), reward, self._is_terminal
 
     def calculate_reward(self):
-        """Determinse the reward for the most recent step."""
+        """Determines the reward for the most recent step."""
         if self._is_terminal and self._pegs_left == 1:
             reward = HexEnvironment.REWARD_WIN
         elif self._is_terminal:
