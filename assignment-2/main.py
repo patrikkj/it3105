@@ -1,4 +1,4 @@
-from envs.hex import HexEnvironment
+from envs.hex import HexEnvironment, HexRenderer
 from envs.nim import NimEnvironment
 
 
@@ -45,9 +45,10 @@ configs = {
 
 def main_hex():
     with HexEnvironment(**configs["hex_params"]) as env:
-        network = ActorNetwork(**configs["network_params"])
-        actor = Actor(env, network, **configs["actor_params"])
-        agent = MCTSAgent(env, actor, **configs["mcts_params"])
+        HexRenderer.plot(env.board)
+        #network = ActorNetwork(**configs["network_params"])
+        #actor = Actor(env, network, **configs["actor_params"])
+        #agent = MCTSAgent(env, actor, **configs["mcts_params"])
         # TODO: Fix stubs
 
 
@@ -75,4 +76,4 @@ def main_nim():
         print("\n\n\n")
 
 main_hex()
-main_nim()
+#main_nim()
