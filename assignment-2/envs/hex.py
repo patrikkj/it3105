@@ -197,9 +197,7 @@ class HexEnvironment(StateManager):
 
 
 class HexRenderer:
-    COLUMN_NAMES = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     THETA = np.radians(30)
-
 
     @staticmethod
     @lru_cache(maxsize=1)
@@ -256,10 +254,10 @@ class HexRenderer:
         numeric_labels = np.tile(np.array(list(map(str, range(1, n+1)))), 2)
 
         for label, coords in zip(alpha_labels, alpha_coords):
-            ax.text(*coords, label)
+            ax.text(*coords, label, fontsize=7, fontweight='bold')
 
         for label, coords in zip(numeric_labels, numeric_coords):
-            ax.text(*coords, label)
+            ax.text(*coords, label, fontsize=7, fontweight='bold')
 
         # Add triangles in the background
         tri_low, tri_high = low - tri_offset, high + tri_offset
@@ -290,7 +288,7 @@ class HexRenderer:
         rows = len(board)
         cols = len(board[0])
         indent = 0
-        headings = " "*5+(" "*3).join(HexRenderer.COLUMN_NAMES[:cols])
+        headings = " "*5+(" "*3).join(ascii_uppercase[:cols])
         out.append(headings)
         out.append(" "*5+(" "*3).join("-"*cols))    # tops
         out.append(" "*4+"/ \\"+"_/ \\"*(cols-1))   # roof
