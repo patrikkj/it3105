@@ -1,10 +1,11 @@
 from copy import deepcopy
 from enum import Flag, auto
 from functools import cached_property, lru_cache
+from string import ascii_uppercase
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import RegularPolygon
+from matplotlib.patches import Polygon, RegularPolygon
 
 from .state_manager import EnvironmentSpec, StateManager
 
@@ -51,7 +52,6 @@ class HexGrid:
 
         # Remove out-of-bounds indices
         indices = indices[np.all((indices >= 0) & (indices < self.board_size), axis=1)]
-        print(f"Neighborhood: {indices.tolist()}")
 
         # Return matching cells within neighborhood
         for _x, _y in indices:
@@ -208,9 +208,10 @@ class HexRenderer:
         cos, sin = np.cos(theta), np.sin(theta)
 
         # Construct affine transformations
+        skew_matrix = np.array([[1, 0], [0, np.sqrt(3)/2]])     # Adjust 'y' coordinates for compact grid layout
         shear_matrix = np.array([[1, 0], [theta, 1]])
         rotation_matrix = np.array(((cos, -sin), (sin, cos)))
-        mat = shear_matrix @ rotation_matrix
+        mat = skew_matrix @ shear_matrix @ rotation_matrix
         return mat
 
     @staticmethod
@@ -221,29 +222,60 @@ class HexRenderer:
 
         # Create ramdonly filled board to see colors
         board = np.random.randint(0, 3, board.shape)
+        n = board.shape[0]
+        low, high = 0, n - 1
+        label_offset = 1
+        tri_offset = 1.5
         colors = {
-            0.: "gray",
-            1.: "red",
-            2.: "green"
+            0.: "#bbb",
+            1.: "#F8A857",
+            2.: "#57A8F8"
         }
 
         # Do some matte 3, TODO: cleanup
         coords = np.indices(board.shape).astype(float)
-        coords[1, ...] *= (np.sqrt(3) / 2)          # Adjust for more compact grid
         coords = coords.reshape(2, -1).T
         new_coords = coords @ HexRenderer._transform_matrix()
 
         # Add hexagons
         for coord, player in zip(new_coords, board.flat):
             hexagon = RegularPolygon(coord, numVertices=6, radius=np.sqrt(1/3), 
-                orientation=-HexRenderer.THETA, facecolor=colors[player], edgecolor='k', alpha=0.2)
+                orientation=-HexRenderer.THETA, facecolor=colors[player], edgecolor='#606060', zorder=1)
             ax.add_patch(hexagon)
+        
+        # Add labels for cell references (A1, B3, ...)
+        label_low, label_high = low - label_offset, high + label_offset
+        top_coords = np.vstack([np.full(n, fill_value=label_low), np.arange(n)]).T
+        bottom_coords = np.vstack([np.full(n, fill_value=label_high), np.arange(n)]).T
+        alpha_coords = np.vstack([top_coords, bottom_coords]) @ HexRenderer._transform_matrix()
+        alpha_labels = np.tile(np.array(list(ascii_uppercase[:n])), 2)
 
-        # TODO: Add triangles in background
-        # TODO: Add labels for cell references (A1, B3, ...)
+        left_coords = np.vstack([np.arange(n), np.full(n, fill_value=label_low)]).T
+        right_coords = np.vstack([np.arange(n), np.full(n, fill_value=label_high)]).T
+        numeric_coords = np.vstack([left_coords, right_coords]) @ HexRenderer._transform_matrix()
+        numeric_labels = np.tile(np.array(list(map(str, range(1, n+1)))), 2)
 
+        for label, coords in zip(alpha_labels, alpha_coords):
+            ax.text(*coords, label)
+
+        for label, coords in zip(numeric_labels, numeric_coords):
+            ax.text(*coords, label)
+
+        # Add triangles in the background
+        tri_low, tri_high = low - tri_offset, high + tri_offset
+        tri_coords = np.array([
+            (tri_high, tri_high), (tri_low, tri_low), 
+            (tri_low, tri_high), (tri_high, tri_low), 
+            ((tri_low + tri_high)/2, (tri_low + tri_high)/2)
+        ])
+        tri_coords = tri_coords @ HexRenderer._transform_matrix()
+        t, b, l, r, c = tri_coords
+        red_triangles = ((t, l, c), (r, b, c))
+        green_triangles = ((l, b, c), (r, t, c))
+        [ax.add_patch(Polygon(tri, facecolor="#FAC48E", edgecolor='#606060', zorder=0)) for tri in red_triangles]
+        [ax.add_patch(Polygon(tri, facecolor="#85BFF9", edgecolor='#606060', zorder=0)) for tri in green_triangles]
+        
         # Display figure
-        plt.title("Dag Wessel-Berg <3")
         plt.autoscale(enable=True)
         plt.axis('off')
         plt.show()
