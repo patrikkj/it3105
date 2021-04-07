@@ -1,5 +1,6 @@
 from copy import deepcopy
 from enum import Flag, auto
+from functools import cached_property, lru_cache
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -196,8 +197,23 @@ class HexEnvironment(StateManager):
 
 
 class HexRenderer:
-    column_names = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    COLUMN_NAMES = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    THETA = np.radians(30)
 
+
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def _transform_matrix():
+        theta = HexRenderer.THETA
+        cos, sin = np.cos(theta), np.sin(theta)
+
+        # Construct affine transformations
+        shear_matrix = np.array([[1, 0], [theta, 1]])
+        rotation_matrix = np.array(((cos, -sin), (sin, cos)))
+        mat = shear_matrix @ rotation_matrix
+        return mat
+
+    @staticmethod
     def plot(board):
         # Create figure
         fig, ax = plt.subplots(1)
@@ -213,20 +229,14 @@ class HexRenderer:
 
         # Do some matte 3, TODO: cleanup
         coords = np.indices(board.shape).astype(float)
-        #coords[::2] += 0.5
-        #coords[0, :, 1::2] -= 0.5
         coords[1, ...] *= (np.sqrt(3) / 2)          # Adjust for more compact grid
         coords = coords.reshape(2, -1).T
-        theta = np.radians(30)
-        cos, sin = np.cos(theta), np.sin(theta)
-        S = np.array([[1, 0], [theta, 1]])          # Shear matrix
-        R = np.array(((cos, -sin), (sin, cos)))     # Rotation matrix, TODO: Combine transforms
-        new_coords = coords @ S @ R 
+        new_coords = coords @ HexRenderer._transform_matrix()
 
         # Add hexagons
         for coord, player in zip(new_coords, board.flat):
             hexagon = RegularPolygon(coord, numVertices=6, radius=np.sqrt(1/3), 
-                orientation=-theta, facecolor=colors[player], edgecolor='k', alpha=0.2)
+                orientation=-HexRenderer.THETA, facecolor=colors[player], edgecolor='k', alpha=0.2)
             ax.add_patch(hexagon)
 
         # TODO: Add triangles in background
@@ -248,7 +258,7 @@ class HexRenderer:
         rows = len(board)
         cols = len(board[0])
         indent = 0
-        headings = " "*5+(" "*3).join(HexRenderer.column_names[:cols])
+        headings = " "*5+(" "*3).join(HexRenderer.COLUMN_NAMES[:cols])
         out.append(headings)
         out.append(" "*5+(" "*3).join("-"*cols))    # tops
         out.append(" "*4+"/ \\"+"_/ \\"*(cols-1))   # roof
