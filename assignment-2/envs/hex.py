@@ -197,11 +197,25 @@ class HexEnvironment(StateManager):
 
 
 class HexRenderer:
+    # Static variables
     THETA = np.radians(30)
+    edge_color = "#606060"
+    hex_colors = {
+        0.: "#bbb",
+        1.: "#F8A857",
+        2.: "#57A8F8"
+    }
+    tri_colors = {
+        1: "#FAC48E",
+        2: "#85BFF9"
+    }
+
 
     @staticmethod
     @lru_cache(maxsize=1)
     def _transform_matrix():
+        """Applies an affine transformation which maps to the hex coordinate system."""
+        # TODO: Rewrite transformations to using 'matplotlib.transforms.Affine2D'
         theta = HexRenderer.THETA
         cos, sin = np.cos(theta), np.sin(theta)
 
@@ -209,8 +223,7 @@ class HexRenderer:
         skew_matrix = np.array([[1, 0], [0, np.sqrt(3)/2]])     # Adjust 'y' coordinates for compact grid layout
         shear_matrix = np.array([[1, 0], [theta, 1]])
         rotation_matrix = np.array(((cos, -sin), (sin, cos)))
-        mat = skew_matrix @ shear_matrix @ rotation_matrix
-        return mat
+        return skew_matrix @ shear_matrix @ rotation_matrix
 
     @staticmethod
     def plot(board):
@@ -224,21 +237,15 @@ class HexRenderer:
         low, high = 0, n - 1
         label_offset = 1
         tri_offset = 1.5
-        colors = {
-            0.: "#bbb",
-            1.: "#F8A857",
-            2.: "#57A8F8"
-        }
-
-        # Do some matte 3, TODO: cleanup
-        coords = np.indices(board.shape).astype(float)
-        coords = coords.reshape(2, -1).T
-        new_coords = coords @ HexRenderer._transform_matrix()
 
         # Add hexagons
-        for coord, player in zip(new_coords, board.flat):
-            hexagon = RegularPolygon(coord, numVertices=6, radius=np.sqrt(1/3), 
-                orientation=-HexRenderer.THETA, facecolor=colors[player], edgecolor='#606060', zorder=1)
+        coords = np.indices(board.shape).astype(float)
+        coords = coords.reshape(2, -1).T
+        coords = coords @ HexRenderer._transform_matrix()
+
+        for coord, player in zip(coords, board.flat):
+            hexagon = RegularPolygon(coord, numVertices=6, radius=np.sqrt(1/3), orientation=HexRenderer.THETA, 
+                facecolor=HexRenderer.hex_colors[player], edgecolor=HexRenderer.edge_color, zorder=1)
             ax.add_patch(hexagon)
         
         # Add labels for cell references (A1, B3, ...)
@@ -253,11 +260,8 @@ class HexRenderer:
         numeric_coords = np.vstack([left_coords, right_coords]) @ HexRenderer._transform_matrix()
         numeric_labels = np.tile(np.array(list(map(str, range(1, n+1)))), 2)
 
-        for label, coords in zip(alpha_labels, alpha_coords):
-            ax.text(*coords, label, fontsize=7, fontweight='bold')
-
-        for label, coords in zip(numeric_labels, numeric_coords):
-            ax.text(*coords, label, fontsize=7, fontweight='bold')
+        for label, coords in zip([*alpha_labels, *numeric_labels], [*alpha_coords, *numeric_coords]):
+            ax.text(*coords, label, fontsize=7, fontweight='bold', ha="center", va="center")
 
         # Add triangles in the background
         tri_low, tri_high = low - tri_offset, high + tri_offset
@@ -268,11 +272,12 @@ class HexRenderer:
         ])
         tri_coords = tri_coords @ HexRenderer._transform_matrix()
         t, b, l, r, c = tri_coords
-        red_triangles = ((t, l, c), (r, b, c))
-        green_triangles = ((l, b, c), (r, t, c))
-        [ax.add_patch(Polygon(tri, facecolor="#FAC48E", edgecolor='#606060', zorder=0)) for tri in red_triangles]
-        [ax.add_patch(Polygon(tri, facecolor="#85BFF9", edgecolor='#606060', zorder=0)) for tri in green_triangles]
-        
+        triangles = [((t, l, c), 1), ((r, b, c), 1), ((l, b, c), 2), ((r, t, c), 2)]
+
+        for tri_coords, player in triangles:
+            triangle = Polygon(tri_coords, facecolor=HexRenderer.tri_colors[player], edgecolor=HexRenderer.edge_color, zorder=0)
+            ax.add_patch(triangle)
+    
         # Display figure
         plt.autoscale(enable=True)
         plt.axis('off')
