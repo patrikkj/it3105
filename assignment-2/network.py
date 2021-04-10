@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from .actor import Actor
+from base import Actor
 
 
 class ActorNetwork(Actor):

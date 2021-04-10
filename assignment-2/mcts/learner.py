@@ -5,6 +5,8 @@ from functools import lru_cache
 
 import numpy as np
 
+from base import Learner
+
 
 @dataclass
 class MCNode:
@@ -166,7 +168,7 @@ class MCTSLearner(Learner):
         """Ask the target policy for the probability distribution over actions."""
         return self.target_policy.get_action(state)
 
-    def run(self):
+    def learn(self):
         """
         Does 'self.n_episodes' iterations of learning.
         Also saves network state every now and then.

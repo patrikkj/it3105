@@ -1,4 +1,4 @@
-from ..base import LearningAgent
+from base import LearningAgent
 
 
 class MCTSAgent(LearningAgent):

@@ -16,7 +16,11 @@ class StateManager:
         self._spec = spec
 
     @abstractmethod
-    def move(self, player, action):
+    def move(self, action, player):
+        """
+        Should return the next state, reward 
+        and whether the new state is a terminal state.
+        """ 
         ...
 
     @abstractmethod
@@ -60,6 +64,15 @@ class StateManager:
         returns a compressed state representation.
         """
         ...
+
+    def render(self, block=True, pause=0.1, close=True):
+        """
+        Renders the current environment.
+        Setting 'block=True' should cause the rendering backend to block execution.
+        Setting 'pause' controls how long execution will be blocked.
+        Setting 'close=True' should automatically close the visualization when execution continues.
+        """
+        raise NotImplementedError
     
     @staticmethod
     def apply(state, action):
@@ -90,9 +103,11 @@ class Actor:
         ...
 
 class Learner:
+    @abstractmethod
     def learn(self):
         ...
     
+    @abstractmethod
     def step(self):
         ...
 
