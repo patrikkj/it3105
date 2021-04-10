@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Polygon, RegularPolygon
 
-from .state_manager import EnvironmentSpec, StateManager
-œ
+from ..base import EnvironmentSpec, StateManager
+
 
 class HexFlag(Flag):
     """Flag stating whether a cell is connected to a given edge."""

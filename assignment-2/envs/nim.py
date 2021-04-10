@@ -1,6 +1,6 @@
 import random
 
-from .state_manager import StateManager
+from ..base import StateManager
 
 
 class NimEnvironment(StateManager):

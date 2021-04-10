@@ -1,8 +1,6 @@
 import tensorflow as tf
 
-
-class Actor:
-    ...
+from .actor import Actor
 
 
 class ActorNetwork(Actor):
@@ -34,6 +32,7 @@ class ActorNetwork(Actor):
             optimizer:              Optimizer to be used for weight updates
             activation:             Activation function for hidden layers
         """
+        self.env = env
         self.optimizer = ActorNetwork.optimizers[optimizer]
         self.activation = ActorNetwork.activations[activation]
         self.alpha = alpha
@@ -49,12 +48,15 @@ class ActorNetwork(Actor):
         reshaped = tf.reshape(tensor, shape=(1, -1))
         return self.model(reshaped)
 
+    def get_action(self, state):
+        return self(state)
+
     def _build_model(self):
         """Builds the Keras mudel used as a state-value approximator."""
         model = tf.keras.Sequential()
 
         # Add input layer (state encoding)
-        input_spec = self.env.spec().observations
+        input_spec = self.env.spec.observations
         model.add(tf.keras.layers.Input(shape=(input_spec, )))
 
         # Add hidden layers
@@ -62,7 +64,7 @@ class ActorNetwork(Actor):
             model.add(tf.keras.layers.Dense(units, activation=self.activation))
 
         # Add output layer (probability dist. over action space)
-        output_spec = self.env.spec().actions
+        output_spec = self.env.spec.actions
         model.add(tf.keras.layers.Dense(output_spec, activation='softmax'))
 
         # TODO: Add custom transformation layer to modify logits

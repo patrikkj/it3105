@@ -1,6 +1,8 @@
 from envs.hex import HexEnvironment, HexRenderer
 from envs.nim import NimEnvironment
-
+from actors.network import ActorNetwork
+from agents.mcts import MCTSAgent, tree_policy, default_policy
+from agents.replay import ReplayBuffer
 
 configs = {
     "n_episodes": 2000,
@@ -12,12 +14,14 @@ configs = {
     },
 
     "hex_params": {
-        "board_size": 5                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
+        "board_size": 4                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
     },
 
     "mcts_params": {
-        "n_episodes": 5,
-        "n_simulations": 5,
+        "n_episodes": 300,
+        "n_simulations": 200,
+        "save_interval": 50,
+        "batch_size": 64
     },
 
     "network_params": {
@@ -28,14 +32,6 @@ configs = {
         "batch_size": 32
     },
 
-    "actor_params": {
-        "decay_rate": 0.9,          
-        "discount_rate": 0.99,
-        "epsilon": 0.5,
-        "epsilon_min": 0.03,
-        "epsilon_decay": 0.99,
-    },
-
     "topp_params": {
         "m": 4,     # Number of ANETs to be cached in preparation for a TOPP
         "g": 200    # Number of games to be played between agents during round-robin tournament
@@ -43,13 +39,14 @@ configs = {
 }
 
 
+
 def main_hex():
     with HexEnvironment(**configs["hex_params"]) as env:
-        HexRenderer.plot(env.board)
-        #network = ActorNetwork(**configs["network_params"])
-        #actor = Actor(env, network, **configs["actor_params"])
-        #agent = MCTSAgent(env, actor, **configs["mcts_params"])
-        # TODO: Fix stubs
+        #HexRenderer.plot(env.board)
+        network = ActorNetwork(env, **configs["network_params"])
+        replay_buffer = ReplayBuffer(buffer_size=512)
+        agent = MCTSAgent(env, tree_policy=tree_policy, target_policy=default_policy, replay_buffer=replay_buffer, **configs["mcts_params"])
+        agent.run()
 
 
 def main_nim():
@@ -75,5 +72,44 @@ def main_nim():
         print("CONGRATULATIONS!!!")
         print("\n\n\n")
 
-main_hex()
+
+def debug_hex():
+    import cProfile
+    with cProfile.Profile() as pr:
+        main_hex()
+    pr.print_stats(sort=1)
+
+
+# Sketchup of refactored component structures
+"""
+env = HexEnrivonment()                              # Instance of 'StateManager'
+    spec = EnvironmentSpec()
+    grid = HexGrid()
+    renderer = HexRenderer()
+
+network = Network()
+replay_buffer = ReplayBuffer()
+
+actor = MCTSActor(env, network)                             # Instance of 'Actor'
+learner = MCTSLearner(env, actor, network, replay_buffer)   # Instance of 'Learner'
+    root = MonteCarloNode()
+    mct = MonteCarloTree(root)
+
+mcts_agent = MCTSAgent(env, actor, learner)         # Instance of 'LearningAgent' <- 'Agent'
+random_agent = RandomAgent(env)                     # Instance of 'Agent'
+human_agent = HumanAgent(env)                       # Instance of 'Agent'
+minimax_agent = MiniMaxAgent(env)                   # Instance of 'Agent' (haha, use this to train for TOPP?)
+
+environment_loop = EnvironmentLoop(
+    agent_1=mcts_agent,
+    agent_2=random_agemt
+):
+    if isinstance(agent, LearningAgent):
+        agent.learn()
+    ...
+"""
+
+
+#main_hex()
+debug_hex()
 #main_nim()

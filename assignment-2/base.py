@@ -3,11 +3,13 @@ from copy import deepcopy
 from dataclasses import dataclass
 
 
+"""
+------------- Environment -------------
+"""
 @dataclass
 class EnvironmentSpec:
     observations: int
     actions: int
-
 
 class StateManager:
     def __init__(self, spec):
@@ -73,3 +75,56 @@ class StateManager:
 
     def __exit__(self, *args):
         return False
+
+
+"""
+------------- Components -------------
+"""
+class Actor:
+    @abstractmethod
+    def get_action(self, state):
+        ...
+
+    @abstractmethod
+    def update(self):
+        ...
+
+class Learner:
+    def learn(self):
+        ...
+    
+    def step(self):
+        ...
+
+
+"""
+------------- Agents -------------
+"""
+class Agent:
+    @abstractmethod
+    def get_action(self, state):
+        ...
+
+    def update(self):
+        """
+        Agents can optionally override this method to perform learning
+        on the agents' underlying actor.
+        """
+        ...
+
+class LearningAgent(Agent):
+    # Maybe also enforce attributes?
+    #def __init__(self, actor, learner)
+    #    ...
+    
+    @abstractmethod
+    def learn(self):
+        ...
+
+    @abstractmethod
+    def save(self):
+        ...
+
+    @abstractmethod
+    def load(self):
+        ...
