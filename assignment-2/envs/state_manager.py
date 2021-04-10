@@ -10,6 +10,9 @@ class EnvironmentSpec:
 
 
 class StateManager:
+    def __init__(self, spec):
+        self._spec = spec
+
     @abstractmethod
     def move(self, player, action):
         ...
@@ -17,7 +20,7 @@ class StateManager:
     @abstractmethod
     def reset(self):
         ...
-
+    
     @abstractmethod
     def is_finished(self):
         ...
@@ -27,16 +30,20 @@ class StateManager:
         ...
 
     @abstractmethod
+    def get_initial_observation(self):
+        ...
+
+    @abstractmethod
     def get_observation(self):
         # NOTE: Observations must be hashable!
         ...
 
-    @abstractmethod
+    @property
     def spec(self):
         """Describes the specifications of the managed environment.
         Should be instance of EnvironmentSpec.
         """
-        ...
+        return self._spec
 
     def copy(self):
         """
@@ -51,6 +58,15 @@ class StateManager:
         returns a compressed state representation.
         """
         ...
+    
+    @staticmethod
+    def apply(state, action):
+        """
+        Returns the state defined by applying 'action' to 'state'.
+        Convenience function, does no perform any move validation
+        nor changes to the state of the environment.
+        """
+        raise NotImplementedError
 
     def __enter__(self):
         return self
