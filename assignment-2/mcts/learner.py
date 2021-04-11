@@ -1,8 +1,3 @@
-import math
-import random
-from dataclasses import dataclass, field
-from functools import lru_cache
-
 import numpy as np
 from base import Learner
 
@@ -29,8 +24,7 @@ class MCTSLearner(Learner):
         """
         Does 'self.n_episodes' iterations of learning.
         Also saves network state every now and then.
-        """
-                                                                        
+        """                                    
         self.replay_buffer.clear()
         self.network.save()
 
@@ -43,13 +37,14 @@ class MCTSLearner(Learner):
 
     def step(self, env):
         """Does one iteration of learning."""
-        self.root = root = MCNode.from_state(env.get_observation())
+        self.root = root = MCNode.from_state(env.get_initial_observation())
         self.mct = mct = MCTree(root, self.tree_policy, self.target_policy)
 
         while not env.is_finished():
             for _ in range(self.n_simulations):
                 env_sim = env.copy()
                 leaf = mct.search(env_sim)
+                leaf = mct.node_expansion(env, leaf)
                 reward = mct.rollout(env_sim, leaf)
                 mct.backpropagate(leaf, reward)
 

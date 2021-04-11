@@ -63,3 +63,5 @@ class HumanHexAgentV2(Agent):
         while (action := HumanHexAgentV2.action) not in legal_actions:
             plt.waitforbuttonpress()
         return action
+
+# TODO: MiniMaxAgent? (haha, use this to train for TOPP?)

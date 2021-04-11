@@ -36,12 +36,14 @@ class NaiveMCTSAgent(Agent):
     def get_action(self, state):
         """Ask the tree policy for the probability distribution over actions."""
         # Does one iteration of learning.
-        root = MCNode.from_state(state)
-        mct = MCTree(root, self.tree_policy, self.target_policy)
+        self.root = root = MCNode.from_state(state)
+        self.mct = mct = MCTree(root, self.tree_policy, self.target_policy)
+
         for sim in range(self.n_simulations):
             env_sim = self.env.copy()
             leaf = mct.search(env_sim)
+            leaf = mct.node_expansion(env_sim, leaf)
             reward = mct.rollout(env_sim, leaf)
             mct.backpropagate(leaf, reward)
-        mct.visualize()
+        #mct.visualize()
         return self.tree_policy(root, c=0)

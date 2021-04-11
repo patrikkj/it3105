@@ -153,8 +153,8 @@ class HexEnvironment(StateManager):
         self.reset()    # Initialize environment state (all initialization is done in self.reset())
 
     def _validate_move(self, action, player):
-        assert player == self._current_player, f"Invalid move; it's not player {player}'s turn!"
         assert not self._is_terminal, f"Game is over; cannot make any more moves."
+        assert player == self._current_player, f"Invalid move; it's not player {player}'s turn!"
         assert action in self._actions, f"The selected action {action} is not allowed."
 
     def move(self, action, player):
@@ -165,17 +165,18 @@ class HexEnvironment(StateManager):
         self.board[x, y] = player
         self._actions.discard(action)
 
-        flags = self.hexgrid.move(x, y, player)     # Apply move to internal representation
-        self._is_terminal = HexFlag.is_win(flags)   # Determine if terminal state
-        reward = self.calculate_reward()            # Determine reward
-
-        self._step += 1
+        flags = self.hexgrid.move(x, y, player)         # Apply move to internal representation
+        self._is_terminal = HexFlag.is_win(flags)       # Determine if terminal state
+            
+        if self._is_terminal:
+            self._winning_player = self._current_player
         self._current_player = self._current_player % 2 + 1
-        return self.get_observation(), reward, self._is_terminal
+        self._step += 1
+        return self.get_observation(), self.calculate_reward(), self._is_terminal
 
     def calculate_reward(self):
         """Determines the reward for the most recent step."""
-        if self._is_terminal and self._current_player == 2:
+        if self._is_terminal and self._winning_player == 1:
             reward = HexEnvironment.REWARD_WIN
         elif self._is_terminal:
             reward = HexEnvironment.REWARD_LOSS
@@ -203,6 +204,7 @@ class HexEnvironment(StateManager):
         self.board = np.zeros((self.board_size, self.board_size), dtype=int)
         self.hexgrid = HexGrid(self.board_size)
         self._current_player = 1
+        self._winning_player = -1
         self._actions = set(range(self.board.size))
         self._is_terminal = False
         self._step = 0
@@ -215,13 +217,14 @@ class HexEnvironment(StateManager):
         obj.board = self.board.copy()
         obj.hexgrid = self.hexgrid.copy()
         obj._current_player = self._current_player
+        obj._winning_player = self._winning_player
         obj._actions = self._actions.copy()
         obj._is_terminal = self._is_terminal
         obj._step = self._step
         return obj
     
     def render(self, block=True, pause=0.1, close=True, callable_=None):
-        title = f"Player {self._current_player % 2 + 1} won!" if self._is_terminal else None
+        title = f"Player {self._winning_player} won!" if self._is_terminal else None
         HexRenderer.plot(self.board, block=block, pause=pause, close=close, title=title, callable_=callable_)
     
     @staticmethod
@@ -366,3 +369,12 @@ class HexRenderer:
         headings = " "*(indent-2)+headings
         out.append(headings)
         return "\n".join(out)
+
+    @staticmethod
+    def board2asciistring(board):
+       # Lets make some fancy shear operations
+       lines = " " + np.array2string(board, 
+                               separator=' ', 
+                               prefix='', 
+                               suffix='').replace('[', '').replace(']', '')
+       return "\n".join(f"{' '*i}\\{line}\\" for i, line in enumerate(lines.split("\n")))

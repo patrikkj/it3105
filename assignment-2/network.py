@@ -1,5 +1,6 @@
 import tensorflow as tf
-from tf.keras.layers import Dense, Input
+from tensorflow.keras.layers import Dense, Input
+
 from base import Actor
 
 
