@@ -1,5 +1,7 @@
 from graphviz import Digraph
 
+import cProfile
+from functools import wraps
 
 i = 0
 class Node():
@@ -11,6 +13,15 @@ class Node():
         return self.identifier
 
 
+def debug(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with cProfile.Profile() as pr:
+            out = func(*args, **kwargs)
+        pr.print_stats(sort=1)
+        return out
+    return wrapper
+
 def flatten_nodes(node, successor_attr='children'):
     # base case
     successors = getattr(node, successor_attr)
@@ -18,7 +29,6 @@ def flatten_nodes(node, successor_attr='children'):
         successors = successors.values()
     if not successors:
         return [node]
-
     return [node] + [n for successor in successors for n in flatten_nodes(successor, successor_attr=successor_attr)]
 
 def visualize_graph(root, 
@@ -29,10 +39,9 @@ def visualize_graph(root,
                     edge_label_func=None, 
                     root_to_none=True, 
                     show=False):
-    #g = Digraph(graph_attr={"rankdir":'LR'})
-    g = Digraph()
+    #g = Digraph()
 
-    # g = Digraph(format='png')
+    g = Digraph(format='png')
     nodes = flatten_nodes(root, successor_attr=successor_attr)
     node_to_id = {node : str(id_) for id_, node in enumerate(nodes)}
 

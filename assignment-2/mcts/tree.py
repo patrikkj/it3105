@@ -4,22 +4,8 @@ import math
 import random
 from dataclasses import dataclass, field
 from functools import lru_cache
-from envs.hex import HexRenderer
 import numpy as np
-import viz
-import numpy as np
-
-
-def tree_policy(node, c=1):
-    """UCT search policy."""
-    is_max = node.player == 1
-    ucts = [s.uct(c, is_max=is_max) for s in node.successors.values()]
-    func = max if is_max else min
-    return func(zip(ucts, node.successors.keys()))[1]
-    #return func(node.successors.items(), key=lambda node: node[1].uct(c, is_max=is_max))[0]
-
-def default_policy(actions):
-    return random.choice(list(actions))
+import utils
 
 
 @dataclass
@@ -49,14 +35,12 @@ class MCNode:
         sides = int(len(board)**0.5)
         board = np.array(board, dtype=int).reshape(sides, sides)
         return "\n".join([
-            #HexRenderer.board2asciistring(board),
             np.array2string(np.array(board).reshape(sides, sides)),
             f"Player: {self.player}",
             f"Q: {self.Q}",
             f"E: {self.E}",
             f"N: {self.N}"
         ])
-    #f"{k}: {v}" for k, v in self.__dict__.items() if k not in ("successors", "parent")) if self.N > 0 else ""
 
     def __hash__(self):
         return hash(self.state + self.parent.state if self.parent else tuple())
@@ -68,11 +52,12 @@ class MCTree:
     the ID of the player eligible to make the next move.
     """
     def __init__(self, root, tree_policy, target_policy):
-        #MCNode.from_state.cache_clear()
         self.root = root
         self.tree_policy = tree_policy          # Used for tree traversal (which is usually highly exploratory)
         self.target_policy = target_policy      # Used for rollout simulation (default policy) (ActorNetwork in this case)
-
+        #MCNode.from_state.cache_clear()         # Clears the node state memoization cache
+        #print(MCNode.from_state.cache_info())
+        
     def search(self, env):
         """ (1) - Tree Search
         Traversing the tree from the root to a leaf node by using the tree policy.
@@ -90,7 +75,6 @@ class MCTree:
         the parent state (a.k.a. parent node) to the nodes housing the child states (a.k.a. child nodes).
         """
         if env.is_finished():
-            print("Wow, we actually encountered an empty rollout.")
             return node
 
         # We don't expand a node if the branch has yet to be discovered
@@ -119,9 +103,10 @@ class MCTree:
             return env.calculate_reward()
 
         player = node.player
+        state = node.state
         while not env.is_finished():
-            action = self.target_policy(env.get_legal_actions())
-            _, reward, _ = env.move(action, player)
+            action = self.target_policy(state, env=env)
+            state, reward, _ = env.move(action, player)
             player = player % 2 + 1
         return reward
 
@@ -141,8 +126,6 @@ class MCTree:
         Changes the root of the Monte Carlo Tree, ensuring that siblings of
         the previous root are deteched from the remaining subtree.
         """
-        #print(MCNode.from_state.cache_info())
-        #MCNode.from_state.cache_clear() # Clears the node state memoization cache
         del self.root                   # Remove reference to parent such that it can be garbage collected
         self.root = root
         self.root.parent = None
@@ -158,4 +141,4 @@ class MCTree:
         return probs / probs.sum()
 
     def visualize(self):
-        viz.visualize_graph(self.root, successor_attr='successors', show=True)
+        utils.visualize_graph(self.root, successor_attr='successors', show=True)

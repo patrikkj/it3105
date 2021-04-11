@@ -3,38 +3,36 @@ from agents import (HumanHexAgent, HumanHexAgentV2, MCTSAgent, NaiveMCTSAgent,
 from environment_loop import EnvironmentLoop
 from envs.hex import HexEnvironment
 from envs.nim import NimEnvironment
-from mcts.actor import MCTSActor
-from mcts.learner import MCTSLearner
-from mcts.tree import default_policy, tree_policy
-from network import ActorNetwork
-from replay import ReplayBuffer
 
-configs = {
-    "n_episodes": 2000,
-    "reset_on_explore": True,
-
+config = {
     "nim_params": {
         "N" : 87,
         "K" : 5
     },
 
     "hex_params": {
-        "board_size": 7                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
+        "board_size": 5                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
+    },
+
+    "buffer_params": {
+        "buffer_size": 512
     },
 
     "learner_params": {
-        "n_episodes": 30,
+        "n_episodes": 3,
         "n_simulations": 200,
         "save_interval": 50,
         "batch_size": 64
     },
 
     "network_params": {
-        "alpha": 0.001,                 # Learning rate
-        "layer_dims": (10, 5, 1),       # Num. of hidden layers
-        "optimizer": 'adam',            # One of: 'adagrad', 'sgd', 'rmsprop', 'adam'
-        "activation": 'relu',           # One of: 'linear', 'sigmoid', 'tanh', 'relu'
-        "batch_size": 64
+        "alpha": 0.01,                      # Learning rate
+        "layer_dims": (64, 32),             # Num. of hidden layers
+        "optimizer": 'adam',                # One of: 'adagrad', 'sgd', 'rmsprop', 'adam'
+        "activation": 'relu',               # One of: 'linear', 'sigmoid', 'tanh', 'relu'
+        "loss": 'categorical_crossentropy', # One of: 'categorical_crossentropy', 'kl_divergence'
+        "batch_size": 64,
+        "epochs": 5
     },
 
     "topp_params": {
@@ -44,41 +42,18 @@ configs = {
 }
 
 
-def debug(func):
-    import cProfile, functools
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        with cProfile.Profile() as pr:
-            out = func(*args, **kwargs)
-        pr.print_stats(sort=1)
-        return out
-    return wrapper
-
-def _build_mcts_agent(env):
-    network = ActorNetwork(env, **configs["network_params"])
-    replay_buffer = ReplayBuffer()
-    actor = MCTSActor(env, network)
-    learner = MCTSLearner(
-        env=env,
-        tree_policy=tree_policy,
-        target_policy=default_policy,   # =actor
-        network=network,
-        replay_buffer=replay_buffer,
-        **configs["learner_params"])
-    return MCTSAgent(env, actor, learner, mode="mcts")
-
-@debug
 def main_hex():
-    with HexEnvironment(**configs["hex_params"]) as env:
-        #agent_1 = _build_mcts_agent(env)
-        agent_1 = NaiveMCTSAgent(env, n_simulations=10_000)
-        agent_2 = HumanHexAgentV2(env)
-        with EnvironmentLoop(env, agent_1, agent_2, framerate=10) as loop:
+    with HexEnvironment(**config["hex_params"]) as env:
+        agent_1 = MCTSAgent.from_config(env, config)
+        #agent_1 = NaiveMCTSAgent(env)
+        #agent_1 = RandomAgent(env)
+        agent_2 = RandomAgent(env)
+        with EnvironmentLoop(env, agent_1, agent_2, framerate=20) as loop:
             loop.train_agents()
             loop.play_game()
 
 def main_nim():
-    with NimEnvironment(**configs["nim_params"]) as env:
+    with NimEnvironment(**config["nim_params"]) as env:
         print("\n\n\n")
         print(" Initial stones:", env.stones)
         mover = 1
@@ -101,15 +76,7 @@ def main_nim():
         print("\n\n\n")
 
 
-def debug_hex():
-    import cProfile
-    with cProfile.Profile() as pr:
-        main_hex()
-    pr.print_stats(sort=1)
-
-
 main_hex()
-#debug_hex()
 #main_nim()
 
 

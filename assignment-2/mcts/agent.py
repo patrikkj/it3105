@@ -1,37 +1,59 @@
 from base import Agent, LearningAgent
+from network import ActorNetwork
+from replay import ReplayBuffer
 
-from .tree import MCNode, MCTree, default_policy, tree_policy
+from .actor import MCTSActor
+from .learner import MCTSLearner
+from .policy import tree_policy, random_policy
+from .tree import MCNode, MCTree
 
 
 class MCTSAgent(LearningAgent):
-    def __init__(self, env, actor, learner, mode='network'):
+    def __init__(self, env, actor, learner):
         self.env = env
         self.actor = actor
         self.learner = learner
-        self.mode = mode
 
     def get_action(self, state):
-        if self.mode == 'network':
-            return self.actor.get_action(state)
-        elif self.mode == 'mcts':
-            return self.learner.mct.tree_policy(self.learner.root, c=0)
+        return self.actor(state, env=self.env)
     
     def learn(self):
         self.learner.learn()
 
     def save(self):
-        ...
+        self.actor.save()
 
-    def load(self):
-        ...
+    def load(self, path):
+        self.actor.load()
+
+    @classmethod
+    def from_config(cls, env, config):
+        network = ActorNetwork(env, **config["network_params"])
+        replay_buffer = ReplayBuffer(**config["buffer_params"])
+        actor = MCTSActor(env, network)
+        learner = MCTSLearner(
+            env=env,
+            tree_policy=tree_policy,
+            target_policy=actor,
+            network=network,
+            replay_buffer=replay_buffer,
+            **config["learner_params"])
+        return cls(env, actor, learner)
+
+    @staticmethod
+    def from_file(config_path):
+        pass
 
 
 class NaiveMCTSAgent(Agent):
-    def __init__(self, env, n_simulations=1_000):
+    """Implements a subset of the functionality for the MCTS agent.
+    Performs a sequence of rollouts from the current state as a basis for evaluation.
+    """
+    def __init__(self, env, n_simulations=10_000):
         self.env = env
         self.n_simulations = n_simulations
         self.tree_policy = tree_policy
-        self.target_policy = default_policy
+        self.target_policy = random_policy
 
     def get_action(self, state):
         """Ask the tree policy for the probability distribution over actions."""

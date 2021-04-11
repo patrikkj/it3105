@@ -3,9 +3,6 @@ from copy import deepcopy
 from dataclasses import dataclass
 
 
-"""
-------------- Environment -------------
-"""
 @dataclass
 class EnvironmentSpec:
     observations: int
@@ -89,10 +86,6 @@ class StateManager:
     def __exit__(self, *args):
         return False
 
-
-"""
-------------- Components -------------
-"""
 class Actor:
     @abstractmethod
     def get_action(self, state):
@@ -111,10 +104,6 @@ class Learner:
     def step(self):
         ...
 
-
-"""
-------------- Agents -------------
-"""
 class Agent:
     @abstractmethod
     def get_action(self, state):

@@ -16,10 +16,6 @@ class MCTSLearner(Learner):
         self.batch_size = batch_size            # Number of examples per batch from replay buffer
         self.replay_buffer = replay_buffer
 
-    def get_action(self, state):
-        """Ask the target policy for the probability distribution over actions."""
-        return self.target_policy.get_action(state)
-
     def learn(self):
         """
         Does 'self.n_episodes' iterations of learning.
@@ -44,7 +40,7 @@ class MCTSLearner(Learner):
             for _ in range(self.n_simulations):
                 env_sim = env.copy()
                 leaf = mct.search(env_sim)
-                leaf = mct.node_expansion(env, leaf)
+                leaf = mct.node_expansion(env_sim, leaf)
                 reward = mct.rollout(env_sim, leaf)
                 mct.backpropagate(leaf, reward)
 

@@ -2,8 +2,9 @@
 import random
 from string import ascii_uppercase
 
-import mcts.agent
 import matplotlib.pyplot as plt
+
+import mcts.agent
 from base import Agent
 
 MCTSAgent = mcts.agent.MCTSAgent
