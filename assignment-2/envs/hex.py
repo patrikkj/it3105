@@ -132,12 +132,6 @@ class HexGrid:
             self._link(a, b)
             self.grid[a['parent']]['flags'] = a['flags'] | b['flags']      # Combine flags when merging sets
 
-    # def union_many(self, nodes):
-    #     """Convenience method for merging multiple disjoint sets."""
-    #     nodes = list(nodes)
-    #     for x, y in zip(nodes, nodes[1:]):
-    #         self.union(x, y)
-
     def union_many(self, _id, neighbours):
         """Convenience method for merging multiple disjoint sets."""
         for _id_neigh in neighbours:
@@ -161,7 +155,6 @@ class HexEnvironment(StateManager):
     def _validate_move(self, action, player):
         assert player == self._current_player, f"Invalid move; it's not player {player}'s turn!"
         assert not self._is_terminal, f"Game is over; cannot make any more moves."
-        print(action)
         assert action in self._actions, f"The selected action {action} is not allowed."
 
     def move(self, action, player):
@@ -178,7 +171,6 @@ class HexEnvironment(StateManager):
 
         self._step += 1
         self._current_player = self._current_player % 2 + 1
-        #HexRenderer.plot(self.board)
         return self.get_observation(), reward, self._is_terminal
 
     def calculate_reward(self):

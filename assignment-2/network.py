@@ -1,5 +1,5 @@
 import tensorflow as tf
-
+from tf.keras.layers import Dense, Input
 from base import Actor
 
 
@@ -43,37 +43,22 @@ class ActorNetwork(Actor):
     @tf.function
     def __call__(self, state):
         """Returns the networks evaluation of a given state (observation)."""
-        decoded = self.env.decode_state(state)
-        tensor = tf.convert_to_tensor(decoded)
-        reshaped = tf.reshape(tensor, shape=(1, -1))
-        return self.model(reshaped)
+        return self.model(tf.convert_to_tensor(state))
 
     def get_action(self, state):
         return self(state)
 
     def _build_model(self):
         """Builds the Keras mudel used as a state-value approximator."""
-        model = tf.keras.Sequential()
-
-        # Add input layer (state encoding)
         input_spec = self.env.spec.observations
-        model.add(tf.keras.layers.Input(shape=(input_spec, )))
-
-        # Add hidden layers
-        for units in self.layer_dims:
-            model.add(tf.keras.layers.Dense(units, activation=self.activation))
-
-        # Add output layer (probability dist. over action space)
         output_spec = self.env.spec.actions
-        model.add(tf.keras.layers.Dense(output_spec, activation='softmax'))
 
-        # TODO: Add custom transformation layer to modify logits
-        # In this manner we might avoid gradient taping!
-        # We will need to supply custom imput to the transformation layer
-        # Can assign a custom gradient function to the custom layer
-        # Might solve this if using tf.sparse functions which normalize
-        # using missing values in labels
-        
+        model = tf.keras.Sequential([
+            Input(shape=(input_spec, )),                                    # Input layer (state)
+            *[Dense(units, self.activation) for units in self.layer_dims],  # Hidden layers
+            Dense(output_spec, 'softmax')                                   # Output layer (action)
+        ])
+
         # Compile model
         model.compile(
             optimizer=self.optimizer(learning_rate=self.alpha),
@@ -81,25 +66,11 @@ class ActorNetwork(Actor):
         )
         return model
 
-    @tf.function
-    def update(self, observations, labels):
-        # Wraps tf.ops to record operations such that gradients can be calculated
-        with tf.GradientTape() as tape:
-            # Forward propagate
-            logits = self(observations)
-            labels = tf.stop_gradient(labels)
-
-            # TODO: Modify logits by masking prohibited actions
-
-            # Calculate loss
-            # TODO: Update using 'self.model.loss' after model.compile(...)
-            # From TF source code https://github.com/tensorflow/tensorflow/blob/v2.4.1/tensorflow/python/keras/engine/training.py#L449-L549
-            loss = tf.nn.softmax_cross_entropy_with_logits(
-                logits=logits, labels=labels
-            )
-
-        # Compute gradients.
-        weights = self.model.trainable_weights
-        gradients = tape.gradient(loss, weights)
-        self.model.optimizer.apply_gradients(zip(gradients, weights))
-        return loss
+    def train(self, x, y):
+        self.model.fit(x, y, batch_size=self.batch_size)
+    
+    def save(self):
+        print("Saving network ...")
+    
+    def load(self):
+        print("Loading network ...")
