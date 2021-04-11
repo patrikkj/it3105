@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Polygon, RegularPolygon
 
-from ..base import EnvironmentSpec, StateManager
+from base import EnvironmentSpec, StateManager
 
 
 class HexFlag(Flag):
@@ -33,7 +33,6 @@ class HexGrid:
     def __init__(self, board_size):
         self.board_size = board_size
         self.grid = [None for _ in range(board_size**2)]
-        self._neighbour_offsets = tuple(x * board_size + y for x, y in HexGrid.DIRECTIONS)
     
     def _create_cell(self, _id, player, flags=None):
         """Hex-specific implementation of disjoint sets."""
@@ -76,8 +75,8 @@ class HexGrid:
     def move(self, x, y, player):
         # Determine new cell flag
         if player == 1:
-            flags = HexFlag.P1_LOWER if x == 0 else \
-                    HexFlag.P1_UPPER if x == self.board_size - 1 else HexFlag.ISOLATED
+            flags = HexFlag.P1_UPPER if x == 0 else \
+                    HexFlag.P1_LOWER if x == self.board_size - 1 else HexFlag.ISOLATED
         else:
             flags = HexFlag.P2_LOWER if y == 0 else \
                     HexFlag.P2_UPPER if y == self.board_size - 1 else HexFlag.ISOLATED
@@ -96,7 +95,6 @@ class HexGrid:
         obj = object.__new__(self.__class__)
         obj.board_size = self.board_size
         obj.grid = [{**d} if d else None for d in self.grid]
-        obj._neighbour_offsets = self._neighbour_offsets
         return obj
 
     # ----------- Disjoint set operations -----------
@@ -163,7 +161,8 @@ class HexEnvironment(StateManager):
     def _validate_move(self, action, player):
         assert player == self._current_player, f"Invalid move; it's not player {player}'s turn!"
         assert not self._is_terminal, f"Game is over; cannot make any more moves."
-        assert action in self._actions, f"The selected action is not allowed."
+        print(action)
+        assert action in self._actions, f"The selected action {action} is not allowed."
 
     def move(self, action, player):
         self._validate_move(action, player)
@@ -229,6 +228,10 @@ class HexEnvironment(StateManager):
         obj._step = self._step
         return obj
     
+    def render(self, block=True, pause=0.1, close=True, callable_=None):
+        title = f"Player {self._current_player % 2 + 1} won!" if self._is_terminal else None
+        HexRenderer.plot(self.board, block=block, pause=pause, close=close, title=title, callable_=callable_)
+    
     @staticmethod
     def apply(state, action):
         """
@@ -272,8 +275,10 @@ class HexRenderer:
         return skew_matrix @ shear_matrix @ rotation_matrix
 
     @staticmethod
-    def plot(board):
+    def plot(board, block=True, pause=0.1, close=True, title=None, callable_=None):
         # Create figure
+        if plt.get_fignums():
+            plt.close()
         fig, ax = plt.subplots(1)
         ax.set_aspect('equal')
 
@@ -285,13 +290,13 @@ class HexRenderer:
         tri_offset = 1.5
 
         # Add hexagons
-        coords = np.indices(board.shape).astype(float)
-        coords = coords.reshape(2, -1).T
-        coords = coords @ HexRenderer._transform_matrix()
+        old_coords = np.indices(board.shape).astype(float).reshape(2, -1).T
+        coords = old_coords @ HexRenderer._transform_matrix()
 
-        for coord, player in zip(coords, board.flat):
+        for action, coord, player in zip(range(n**2), coords, board.flat):
             hexagon = RegularPolygon(coord, numVertices=6, radius=np.sqrt(1/3), orientation=HexRenderer.THETA, 
-                facecolor=HexRenderer.hex_colors[player], edgecolor=HexRenderer.edge_color, zorder=1)
+                facecolor=HexRenderer.hex_colors[player], edgecolor=HexRenderer.edge_color, zorder=1, picker=True)
+            hexagon.action = action
             ax.add_patch(hexagon)
         
         # Add labels for cell references (A1, B3, ...)
@@ -325,11 +330,17 @@ class HexRenderer:
             ax.add_patch(triangle)
     
         # Display figure
+        if title:
+            plt.title(title)
+        if callable_:
+            fig.canvas.mpl_connect('pick_event', callable_)
         plt.autoscale(enable=True)
         plt.axis('off')
-        plt.show(block=True)
-        #plt.pause(0.1)
-        #plt.close()
+        plt.show(block=block)
+        if pause:
+            plt.pause(pause)
+        if close:
+            plt.close()
 
     @staticmethod
     def board2string(board):

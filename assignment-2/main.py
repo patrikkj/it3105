@@ -1,8 +1,10 @@
+from agents import HumanHexAgent, HumanHexAgentV2, MCTSAgent, RandomAgent
 from envs.hex import HexEnvironment, HexRenderer
 from envs.nim import NimEnvironment
-from actors.network import ActorNetwork
-from agents.mcts import MCTSAgent, tree_policy, default_policy
-from agents.replay import ReplayBuffer
+from mcts.learner import default_policy, tree_policy
+from network import ActorNetwork
+from replay import ReplayBuffer
+from environment_loop import EnvironmentLoop
 
 configs = {
     "n_episodes": 2000,
@@ -14,7 +16,7 @@ configs = {
     },
 
     "hex_params": {
-        "board_size": 4                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
+        "board_size": 5                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
     },
 
     "mcts_params": {
@@ -39,7 +41,7 @@ configs = {
 }
 
 
-
+"""
 def main_hex():
     with HexEnvironment(**configs["hex_params"]) as env:
         #HexRenderer.plot(env.board)
@@ -47,7 +49,17 @@ def main_hex():
         replay_buffer = ReplayBuffer(buffer_size=512)
         agent = MCTSAgent(env, tree_policy=tree_policy, target_policy=default_policy, replay_buffer=replay_buffer, **configs["mcts_params"])
         agent.run()
+"""
 
+def main_hex():
+    env = HexEnvironment(**configs["hex_params"])
+
+    # Agents
+    agent_1 = HumanHexAgentV2(env)
+    agent_2 = RandomAgent(env)
+    
+    with EnvironmentLoop(env, agent_1, agent_2, framerate=10) as loop:
+        loop.play_game()
 
 def main_nim():
     with NimEnvironment(**configs["nim_params"]) as env:
@@ -110,6 +122,6 @@ environment_loop = EnvironmentLoop(
 """
 
 
-#main_hex()
-debug_hex()
+main_hex()
+#debug_hex()
 #main_nim()
