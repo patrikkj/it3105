@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from base import Agent
 
 MCTSAgent = mcts.agent.MCTSAgent
-
+NaiveMCTSAgent = mcts.agent.NaiveMCTSAgent
 
 class RandomAgent(Agent):
     def __init__(self, env):

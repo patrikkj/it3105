@@ -1,7 +1,9 @@
-from agents import HumanHexAgent, HumanHexAgentV2, MCTSAgent, RandomAgent
+from agents import HumanHexAgent, HumanHexAgentV2, MCTSAgent, NaiveMCTSAgent, RandomAgent
 from envs.hex import HexEnvironment, HexRenderer
 from envs.nim import NimEnvironment
-from mcts.learner import default_policy, tree_policy
+from mcts.tree import default_policy, tree_policy
+from mcts.actor import MCTSActor
+from mcts.learner import MCTSLearner
 from network import ActorNetwork
 from replay import ReplayBuffer
 from environment_loop import EnvironmentLoop
@@ -16,22 +18,22 @@ configs = {
     },
 
     "hex_params": {
-        "board_size": 5                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
+        "board_size": 4                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
     },
 
-    "mcts_params": {
-        "n_episodes": 300,
+    "learner_params": {
+        "n_episodes": 30,
         "n_simulations": 200,
         "save_interval": 50,
         "batch_size": 64
     },
 
     "network_params": {
-        "alpha": 0.15,                  # Learning rate
-        "layer_dims": (10, 15, 5, 1),   # Num. of hidden layers
+        "alpha": 0.001,                  # Learning rate
+        "layer_dims": (10, 5, 1),   # Num. of hidden layers
         "optimizer": 'adam',            # One of: 'adagrad', 'sgd', 'rmsprop', 'adam'
         "activation": 'relu',           # One of: 'linear', 'sigmoid', 'tanh', 'relu'
-        "batch_size": 32
+        "batch_size": 64
     },
 
     "topp_params": {
@@ -55,10 +57,25 @@ def main_hex():
     env = HexEnvironment(**configs["hex_params"])
 
     # Agents
-    agent_1 = HumanHexAgentV2(env)
-    agent_2 = RandomAgent(env)
+    agent_2 = HumanHexAgentV2(env)
+    #agent_1 = NaiveMCTSAgent(env, n_simulations=10000)
+    
+    network = ActorNetwork(env, **configs["network_params"])
+    replay_buffer = ReplayBuffer()
+
+    actor = MCTSActor(env, network)                             # Instance of 'Actor'
+    learner = MCTSLearner(
+        env=env,
+        tree_policy=tree_policy,
+        target_policy=default_policy,            # =actor
+        network=network, 
+        replay_buffer=replay_buffer,   # Instance of 'Learner'
+        **configs["learner_params"])
+    agent_1 = MCTSAgent(env, actor, learner, mode="mcts")                 # Instance of 'LearningAgent' <- 'Agent'
+
     
     with EnvironmentLoop(env, agent_1, agent_2, framerate=10) as loop:
+        loop.train_agents()
         loop.play_game()
 
 def main_nim():
