@@ -1,82 +1,31 @@
+import yaml
+
 from agents import (HumanHexAgent, HumanHexAgentV2, MCTSAgent, NaiveMCTSAgent,
                     RandomAgent)
 from environment_loop import EnvironmentLoop
+from tournament import Tournament
 from envs.hex import HexEnvironment
-from envs.nim import NimEnvironment
 
-config = {
-    "nim_params": {
-        "N" : 87,
-        "K" : 5
-    },
-
-    "hex_params": {
-        "board_size": 4                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
-    },
-
-    "buffer_params": {
-        "buffer_size": 1024
-    },
-
-    "learner_params": {
-        "n_episodes": 300,
-        "n_simulations": 200,
-        "save_interval": 50,
-        "batch_size": 64
-    },
-
-    "network_params": {
-        "alpha": 0.001,                      # Learning rate
-        "layer_dims": (50, 50),             # Num. of hidden layers
-        "optimizer": 'adam',                # One of: 'adagrad', 'sgd', 'rmsprop', 'adam'
-        "activation": 'relu',               # One of: 'linear', 'sigmoid', 'tanh', 'relu'
-        "loss": 'kl_divergence', # One of: 'categorical_crossentropy', 'kl_divergence'
-        "batch_size": 64,
-        "epochs": 1
-    },
-
-    "topp_params": {
-        "m": 4,     # Number of ANETs to be cached in preparation for a TOPP
-        "g": 200    # Number of games to be played between agents during round-robin tournament
-    },
-}
+# Load configuration
+CONFIG_PATH = "./assignment-2/config.yml"
+with open(CONFIG_PATH) as f:
+    config = yaml.load(f, Loader=yaml.FullLoader)
 
 
-def main_hex():
+def main():
     with HexEnvironment(**config["hex_params"]) as env:
-        agent_1 = MCTSAgent.from_config(env, config)
-        #agent_1 = NaiveMCTSAgent(env)
+        #agent_1 = MCTSAgent.from_config(env, config)
+        agent_1 = NaiveMCTSAgent(env, n_simulations=50)
         #agent_1 = RandomAgent(env)
         agent_2 = RandomAgent(env)
-        with EnvironmentLoop(env, agent_1, agent_2, framerate=20) as loop:
-            loop.train_agents()
-            loop.play_game()
 
-def main_nim():
-    with NimEnvironment(**config["nim_params"]) as env:
-        print("\n\n\n")
-        print(" Initial stones:", env.stones)
-        mover = 1
-        winner = 0
-        print("---------------------          GAME START        -----------------------------")
-        print("\n")
-        while not env.is_finished():
-            mover = (mover +1) % 2
-            random_move = env.random_move()
-            env.move(mover, random_move)
-            print(env.players[mover], " , stones removed: ", random_move, " , Stones remaining: ", env.stones)
+        #with EnvironmentLoop(env, agent_1, agent_2, framerate=20) as loop:
+        #    loop.train_agents()
+        #    loop.play_game()
 
-        winner = env.players[env.winner()]
-        print("\n")
-        print( "====================         GAME FINISHED        ===================")
-        print("\n")
-        print( "Winner: ", winner)
-        print("\n")
-        print("CONGRATULATIONS!!!")
-        print("\n\n\n")
+        with Tournament(env, [agent_1, agent_2], num_series=200) as tournament:
+            tournament.play_tournament()
 
 
-main_hex()
-#main_nim()
-
-
+if __name__ == "__main__":
+    main()

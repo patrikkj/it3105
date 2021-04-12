@@ -6,7 +6,7 @@ from base import Agent
 
 @dataclass
 class Participant:
-    _id = 0    # Class-level attribute for generating tournament ID's
+    _tid = 0    # Class-level attribute for generating tournament ID's
     
     agent: Agent
     tid: int
@@ -30,7 +30,7 @@ class Tournament:
         PID = Player ID
         TID = Participant (tournament) ID
     """
-    def __init__(self, env, *agents, num_series=25, framerate=1):
+    def __init__(self, env, agents, num_series=25, framerate=1):
         self.env = env
         self.participants = [Participant.from_agent(agent) for agent in agents]
         self.num_series = num_series
@@ -43,6 +43,10 @@ class Tournament:
         while True:
             yield (a, 1)
             yield (b, 2)
+    
+    @staticmethod
+    def round_robin(participants):
+        return list(combinations(participants, 2))
 
     def play_game(self, agent_1, agent_2, reverse=False):
         self.env.reset()
@@ -59,22 +63,23 @@ class Tournament:
             
         # Assign winner
         participant.wins += 1
-        next(participant)[0].losses += 1
+        next(participant_gen)[0].losses += 1
 
     def play_tournament(self):
-        matches = list(combinations(self.participants, 2))
+        matches = Tournament.round_robin(self.participants)
         for participant_1, participant_2 in matches:
-            for game in self.num_series:
+            for game in range(self.num_series):
                 reverse = bool(game % 2)
                 self.play_game(participant_1, participant_2, reverse=reverse)
+        self.print_summary()
 
     def print_summary(self):
         # Sort standings by value
         participants = sorted(self.participants, key=lambda p: p.winrate, reverse=True)
-        
+
         print(" ======= Tournament ======= ")
         for i, p in enumerate(participants):
-            print(f" ({i:3})  Agent {p.tid:3}  Wins: {p.wins:3}  Losses: {p.losses:3}  Win rate: {p.winrate:.2f}  Elo: {p.elo}")
+            print(f" ({i})    Agent {p.tid:<4}  W/L: {f'{p.wins}/{p.losses}':<6}  ({p.winrate:.2f}%)    Elo: {p.elo}")
 
     def __enter__(self):
         return self

@@ -1,0 +1,30 @@
+---
+nim_params:
+  N: 87
+  K: 5
+
+hex_params:
+  board_size: 4         # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
+
+buffer_params:
+  buffer_size: 1024
+
+learner_params:
+  n_episodes: 300
+  n_simulations: 200
+  save_interval: 50
+  batch_size: 64
+
+network_params:
+  alpha: 0.001          # Learning rate
+  layer_dims:           # Num. of hidden layers
+    - 50
+    - 50
+  optimizer: adam       # One of: 'adagrad', 'sgd', 'rmsprop', 'adam'
+  activation: relu      # One of: 'linear', 'sigmoid', 'tanh', 'relu'
+  loss: kl_divergence   # One of: 'categorical_crossentropy', 'kl_divergence'
+  batch_size: 64
+  epochs: 1
+
+topp_params:
+  num_games: 200
