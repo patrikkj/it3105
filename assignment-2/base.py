@@ -41,6 +41,10 @@ class StateManager:
         # NOTE: Observations must be hashable!
         ...
 
+    @abstractmethod
+    def get_winner(self):
+        ...
+
     @property
     def spec(self):
         """Describes the specifications of the managed environment.

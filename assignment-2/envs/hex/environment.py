@@ -67,6 +67,9 @@ class HexEnvironment(StateManager):
     def get_legal_actions(self):
         return self._actions
 
+    def get_winner(self):
+        return self._winning_player
+        
     def reset(self):
         """Resets the environment."""
         self.board = np.zeros((self.board_size, self.board_size), dtype=int)
