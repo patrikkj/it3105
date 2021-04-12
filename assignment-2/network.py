@@ -62,7 +62,10 @@ class ActorNetwork(Actor):
 
     def _build_model(self):
         """Builds the Keras mudel used as a state-value approximator."""
-        input_spec = self.env.spec.observations
+        try:
+            input_spec = self.env.decode_state(self.env.get_initial_observation()).size
+        except:
+            input_spec = self.env.spec.observations
         output_spec = self.env.spec.actions
 
         model = tf.keras.Sequential([
@@ -78,6 +81,10 @@ class ActorNetwork(Actor):
         return model
 
     def train(self, x, y):
+        try:
+            x = self.env.decode_state(x)
+        except:
+            pass
         self.model.fit(x, y, epochs=self.epochs, batch_size=self.batch_size)
     
     def save(self):

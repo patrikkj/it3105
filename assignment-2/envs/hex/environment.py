@@ -93,8 +93,18 @@ class HexEnvironment(StateManager):
     
     def render(self, block=True, pause=0.1, close=True, callable_=None):
         title = f"Player {self._winning_player} won!" if self._is_terminal else None
-        HexRenderer.plot(self.board, block=block, pause=pause, close=close, title=title, callable_=callable_)
+        HexRenderer.render(self.board, block=block, pause=pause, close=close, title=title, callable_=callable_)
     
+    def decode_state(self, state):
+        """
+        Overload this method if 'self.get_observation()' 
+        returns a compressed state representation.
+        Also works on arrays of states.
+        """
+        pids, boards = np.split(state, (1,), axis=-1)
+        return np.atleast_2d(np.hstack((pids, boards==1, boards==2)))
+
+
     @staticmethod
     def apply(state, action):
         """

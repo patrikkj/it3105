@@ -36,7 +36,7 @@ class HexRenderer:
         return skew_matrix @ shear_matrix @ rotation_matrix
 
     @staticmethod
-    def plot(board, block=True, pause=0.1, close=True, title=None, callable_=None):
+    def render(board, block=True, pause=0.1, close=True, title=None, callable_=None):
         # Create figure
         if plt.get_fignums():
             plt.close()

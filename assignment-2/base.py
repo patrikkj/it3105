@@ -60,7 +60,7 @@ class StateManager:
         Overload this method if 'self.get_observation()' 
         returns a compressed state representation.
         """
-        ...
+        raise NotImplementedError
 
     def render(self, block=True, pause=0.1, close=True):
         """
@@ -70,7 +70,7 @@ class StateManager:
         Setting 'close=True' should automatically close the visualization when execution continues.
         """
         raise NotImplementedError
-    
+
     @staticmethod
     def apply(state, action):
         """

@@ -11,28 +11,28 @@ config = {
     },
 
     "hex_params": {
-        "board_size": 5                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
+        "board_size": 4                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
     },
 
     "buffer_params": {
-        "buffer_size": 512
+        "buffer_size": 1024
     },
 
     "learner_params": {
-        "n_episodes": 3,
+        "n_episodes": 300,
         "n_simulations": 200,
         "save_interval": 50,
         "batch_size": 64
     },
 
     "network_params": {
-        "alpha": 0.01,                      # Learning rate
-        "layer_dims": (64, 32),             # Num. of hidden layers
+        "alpha": 0.001,                      # Learning rate
+        "layer_dims": (50, 50),             # Num. of hidden layers
         "optimizer": 'adam',                # One of: 'adagrad', 'sgd', 'rmsprop', 'adam'
         "activation": 'relu',               # One of: 'linear', 'sigmoid', 'tanh', 'relu'
-        "loss": 'categorical_crossentropy', # One of: 'categorical_crossentropy', 'kl_divergence'
+        "loss": 'kl_divergence', # One of: 'categorical_crossentropy', 'kl_divergence'
         "batch_size": 64,
-        "epochs": 5
+        "epochs": 1
     },
 
     "topp_params": {

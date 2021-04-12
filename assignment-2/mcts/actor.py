@@ -11,8 +11,8 @@ class MCTSActor(Actor):
 
     def __call__(self, state, env=None):
         env = env or self.env
-        state = np.array(state).reshape(1, -1)
-        probs = self.network(np.where(state==2, -1, state)).numpy().flatten()
+        state = env.decode_state(state)
+        probs = self.network(state).numpy().flatten()
         
         # Remove illegal actions (no need to normalize probabilities)
         legal_actions = env.get_legal_actions()
