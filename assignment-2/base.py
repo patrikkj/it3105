@@ -64,7 +64,7 @@ class StateManager:
         Overload this method if 'self.get_observation()' 
         returns a compressed state representation.
         """
-        raise NotImplementedError
+        raise state
 
     def render(self, block=True, pause=0.1, close=True):
         """
@@ -121,10 +121,6 @@ class Agent:
         ...
 
 class LearningAgent(Agent):
-    # Maybe also enforce attributes?
-    #def __init__(self, actor, learner)
-    #    ...
-    
     @abstractmethod
     def learn(self):
         ...
