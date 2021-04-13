@@ -1,78 +1,48 @@
+import yaml
+
+from agents import (HumanHexAgent, HumanHexAgentV2, MCTSAgent, NaiveMCTSAgent,
+                    RandomAgent)
+from environment_loop import EnvironmentLoop
+from tournament import Tournament
 from envs.hex import HexEnvironment
-from envs.nim import NimEnvironment
+from utils import debug
+
+# Load configuration
+CONFIG_PATH = "./assignment-2/config.yml"
+with open(CONFIG_PATH) as f:
+    config = yaml.load(f, Loader=yaml.FullLoader)
+
+def main():
+    with HexEnvironment(**config["hex_params"]) as env:
+        # Agent 1
+        #agent_1 = RandomAgent(env)
+        #agent_1 = HumanHexAgentV2(env)
+        #agent_1 = NaiveMCTSAgent(env, n_simulations=4_000)
+        #agent_1 = MCTSAgent.from_config(env, config)
+        agent_1 = MCTSAgent.from_checkpoint(
+            env=env, 
+            export_dir=config["export_dir"], 
+            name="mctsagent__2021_04_13__02_03_34", 
+            episode=200)
+
+        # Agent 2
+        #agent_2 = RandomAgent(env)
+        #agent_2 = HumanHexAgentV2(env)
+        #agent_2 = NaiveMCTSAgent(env, n_simulations=4_000)
+        #agent_2 = MCTSAgent.from_config(env, config)
+        agent_2 = MCTSAgent.from_checkpoint(
+            env=env, 
+            export_dir=config["export_dir"], 
+            name="mctsagent__2021_04_13__02_03_34", 
+            episode=50)
+
+        #with EnvironmentLoop(env, agent_1, agent_2, framerate=20) as loop:
+        #    loop.train_agents()
+        #    loop.play_game()
+
+        with Tournament(env, [agent_1, agent_2], num_series=200) as tournament:
+            tournament.play_tournament()
 
 
-configs = {
-    "n_episodes": 2000,
-    "reset_on_explore": True,
-
-    "nim_params": {
-        "N" : 87,
-        "K" : 5
-    },
-
-    "hex_params": {
-        "board_size": 5                  # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
-    },
-
-    "mcts_params": {
-        "n_episodes": 5,
-        "n_simulations": 5,
-    },
-
-    "network_params": {
-        "alpha": 0.15,                  # Learning rate
-        "layer_dims": (10, 15, 5, 1),   # Num. of hidden layers
-        "optimizer": 'adam',            # One of: 'adagrad', 'sgd', 'rmsprop', 'adam'
-        "activation": 'relu',           # One of: 'linear', 'sigmoid', 'tanh', 'relu'
-        "batch_size": 32
-    },
-
-    "actor_params": {
-        "decay_rate": 0.9,          
-        "discount_rate": 0.99,
-        "epsilon": 0.5,
-        "epsilon_min": 0.03,
-        "epsilon_decay": 0.99,
-    },
-
-    "topp_params": {
-        "m": 4,     # Number of ANETs to be cached in preparation for a TOPP
-        "g": 200    # Number of games to be played between agents during round-robin tournament
-    },
-}
-
-
-def main_hex():
-    with HexEnvironment(**configs["hex_params"]) as env:
-        network = ActorNetwork(**configs["network_params"])
-        actor = Actor(env, network, **configs["actor_params"])
-        agent = MCTSAgent(env, actor, **configs["mcts_params"])
-        # TODO: Fix stubs
-
-
-def main_nim():
-    with NimEnvironment(**configs["nim_params"]) as env:
-        print("\n\n\n")
-        print(" Initial stones:", env.stones)
-        mover = 1
-        winner = 0
-        print("---------------------          GAME START        -----------------------------")
-        print("\n")
-        while not env.is_finished():
-            mover = (mover +1) % 2
-            random_move = env.random_move()
-            env.move(mover, random_move)
-            print(env.players[mover], " , stones removed: ", random_move, " , Stones remaining: ", env.stones)
-        
-        winner = env.players[env.winner()]
-        print("\n")
-        print( "====================         GAME FINISHED        ===================")
-        print("\n")
-        print( "Winner: ", winner)
-        print("\n")
-        print("CONGRATULATIONS!!!")
-        print("\n\n\n")
-
-main_hex()
-main_nim()
+if __name__ == "__main__":
+    main()
