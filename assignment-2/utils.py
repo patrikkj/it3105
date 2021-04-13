@@ -39,9 +39,9 @@ def visualize_graph(root,
                     edge_label_func=None, 
                     root_to_none=True, 
                     show=False):
-    #g = Digraph()
+    g = Digraph()
 
-    g = Digraph(format='png')
+    #g = Digraph(format='png')
     nodes = flatten_nodes(root, successor_attr=successor_attr)
     node_to_id = {node : str(id_) for id_, node in enumerate(nodes)}
 

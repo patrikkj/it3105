@@ -31,6 +31,8 @@ class MCNode:
             return self.Q - c * (math.log(self.parent.N) / (1 + self.N))**0.5
 
     def __str__(self):
+        if self.N == 0:
+            return ""
         board = self.state[1:]
         sides = int(len(board)**0.5)
         board = np.array(board, dtype=int).reshape(sides, sides)

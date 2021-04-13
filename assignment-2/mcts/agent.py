@@ -77,7 +77,8 @@ class MCTSAgent(LearningAgent):
         return cls(env, actor, learner, name=name, export_dir=export_dir)
 
     @classmethod
-    def from_agent_directory(cls, env, export_dir, name):
+    def from_agent_directory(cls, env, export_dir, name=None):
+        name = name or max(os.listdir(f"{export_dir}"))
         agent_dir = f"{export_dir}/{name}"
         episodes = sorted(list(map(int, filter(str.isnumeric, os.listdir(f"{agent_dir}/checkpoints")))))
         return [cls.from_checkpoint(env, export_dir, name, ep) for ep in episodes]
@@ -104,5 +105,6 @@ class NaiveMCTSAgent(Agent):
             leaf = mct.node_expansion(env_sim, leaf)
             reward = mct.rollout(env_sim, leaf)
             mct.backpropagate(leaf, reward)
-        #mct.visualize()
+
+        mct.visualize()
         return self.tree_policy(root, c=0)

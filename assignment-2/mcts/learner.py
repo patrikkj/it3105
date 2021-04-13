@@ -35,13 +35,14 @@ class MCTSLearner(Learner):
 
         for ep in range(1, self.n_episodes + 1):
             env_actual = self.env.reset()
-            self.step(env_actual)
+            self.episode(env_actual)
 
             if ep % self.save_interval == 0:
                 self.save(episode=ep)
 
-    def step(self, env):
+    def episode(self, env):
         """Does one iteration of learning."""
+        # Build a new monte-carlo tree for this particular game
         self.root = root = MCNode.from_state(env.get_initial_observation())
         self.mct = mct = MCTree(root, self._tree_policy, self._target_policy)
 
@@ -53,6 +54,7 @@ class MCTSLearner(Learner):
                 reward = mct.rollout(env_sim, leaf)
                 mct.backpropagate(leaf, reward)
 
+            # Determine what action to make, and add this action to buffer
             D = mct.get_distribution(env, root)
             self._replay_buffer.add(root.state, D)
             action = np.argmax(D)
@@ -60,6 +62,7 @@ class MCTSLearner(Learner):
             self.root = root = root.successors[action]
             mct.change_root(root)
 
+        # At the end of each game, fetch training examples and update network weights
         x_batch, y_batch = self._replay_buffer.fetch_minibatch(batch_size=self.batch_size)
         self._network.train(x_batch, y_batch)
 

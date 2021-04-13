@@ -95,10 +95,6 @@ class Actor:
     def get_action(self, state):
         ...
 
-    @abstractmethod
-    def update(self):
-        ...
-
 class Learner:
     @abstractmethod
     def learn(self):
