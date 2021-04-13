@@ -21,7 +21,7 @@ class MCTSLearner(Learner):
 
     def save(self, episode):
         """Creates a checkpoint of the network and state of replay buffer."""
-        self._network.save(self.agent_dir, episode)
+        self._network.save(episode)
         with open(f"{self.agent_dir}/checkpoints/{episode}_replay_buffer.p", "wb") as f:
             pickle.dump(self._replay_buffer, f)
 
@@ -67,12 +67,14 @@ class MCTSLearner(Learner):
     # -------------------- #
     # Object serialization #
     # -------------------- #
-    def serialize(self):
+    def serialize(self, agent_dir):
         # Save state of current instance (Exclude private members and env. reference)
         config = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
         del config['env']
         with open(f"{self.agent_dir}/learner_config.json", 'w') as f:
             json.dump(config, f, indent=4)
+        self._checkpoint_dir = f"{agent_dir}/checkpoints"
+        self._network.serialize(agent_dir)
 
     @classmethod
     def deserialize(cls, env, tree_policy, target_policy, network, replay_buffer, agent_dir):

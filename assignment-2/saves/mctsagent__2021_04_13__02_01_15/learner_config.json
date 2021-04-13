@@ -1,7 +1,0 @@
-{
-    "n_episodes": 200,
-    "n_simulations": 20,
-    "save_interval": 50,
-    "batch_size": 64,
-    "agent_dir": "assignment-2/saves/mctsagent__2021_04_13__02_01_15"
-}

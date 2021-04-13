@@ -59,7 +59,8 @@ class ActorNetwork(Actor):
         self._activation = ActorNetwork.activations[activation]
         self._loss = ActorNetwork.losses[loss]
         self._model = self._build_model()
-    
+        self._checkpoint_dir = None     # Set by the serialization method
+
     @tf.function
     def __call__(self, state):
         """Returns the networks evaluation of a given state (observation)."""
@@ -92,21 +93,21 @@ class ActorNetwork(Actor):
         x = self.env.decode_state(x)
         self._model.fit(x, y, epochs=self.epochs, batch_size=self.batch_size)
     
-    def save(self, agent_dir, episode=0):
-
+    def save(self, episode=0):
         # Save model parameters
-        tf.keras.models.save_model(self._model, f"{agent_dir}/checkpoints/{episode}")
+        tf.keras.models.save_model(self._model, f"{self._checkpoint_dir}/{episode}")
     
 
     # -------------------- #
     # Object serialization #
     # -------------------- #
-    def serialize(self):
+    def serialize(self, agent_dir):
         # Save state of current instance (Exclude private members and env. reference)
         config = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
         del config['env']
         with open(f"{agent_dir}/network_config.json", 'w') as f:
             json.dump(config, f, indent=4)
+        self._checkpoint_dir = f"{agent_dir}/checkpoints"
 
     @classmethod
     def from_checkpoint(cls, env, agent_dir, episode=0):

@@ -1,3 +1,4 @@
+import glob
 import os
 import pickle
 from datetime import datetime
@@ -33,7 +34,7 @@ class MCTSAgent(LearningAgent):
         checkpoints during the learning process.
         """
         os.makedirs(self.agent_dir, exist_ok=False)
-        self.learner.serialize()
+        self.learner.serialize(self.agent_dir)
         self.learner.learn()
 
 
@@ -75,6 +76,11 @@ class MCTSAgent(LearningAgent):
             agent_dir=agent_dir)
         return cls(env, actor, learner, name=name, export_dir=export_dir)
 
+    @classmethod
+    def from_agent_directory(cls, env, export_dir, name):
+        agent_dir = f"{export_dir}/{name}"
+        episodes = sorted(list(map(int, filter(str.isnumeric, os.listdir(f"{agent_dir}/checkpoints")))))
+        return [cls.from_checkpoint(env, export_dir, name, ep) for ep in episodes]
 
 class NaiveMCTSAgent(Agent):
     """Implements a subset of the functionality for the MCTS agent.

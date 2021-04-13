@@ -23,7 +23,7 @@ class HexGrid:
 
         north_id = _id - n
         if north_id >= 0 and (cell := self.grid[north_id]) and cell['player'] == player:
-            yield north_id 
+            yield north_id
         
         west_id = _id - 1
         if _id % n != 0 and (cell := self.grid[west_id]) and cell['player'] == player:

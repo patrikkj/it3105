@@ -32,10 +32,10 @@ class HexEnvironment(StateManager):
         x, y = action // self.board_size, action % self.board_size
         self.board[x, y] = player
         self._actions.discard(action)
-
+        
         flags = self.hexgrid.move(x, y, player)         # Apply move to internal representation
         self._is_terminal = HexFlag.is_win(flags)       # Determine if terminal state
-            
+        
         if self._is_terminal:
             self._winning_player = self._current_player
         self._current_player = self._current_player % 2 + 1
