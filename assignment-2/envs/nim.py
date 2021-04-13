@@ -13,7 +13,7 @@ class NimEnvironment(StateManager):
         self.N = N
         self.K = K
         self.players = {0: "Player 1" , 1: "Player 2"}
-        self.last_mover = -1;
+        self.last_mover = -1
         self.stones = N
 
     
