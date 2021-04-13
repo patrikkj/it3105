@@ -13,21 +13,20 @@ buffer_params:
 
 learner_params:
   n_episodes: 200
-  n_simulations: 100
-  save_interval: 50
-  batch_size: 64
+  n_simulations: 400
+  save_interval: 10
+  batch_size: 8
 
 network_params:
-  alpha: 0.1            # Learning rate
+  alpha: 0.15           # Learning rate
   layer_dims:           # Num. of hidden layers
-    - 256
-    - 128
-    - 64
-  optimizer: sgd        # One of: 'adagrad', 'sgd', 'rmsprop', 'adam'
+    - 50
+    - 50
+  optimizer: adam        # One of: 'adagrad', 'sgd', 'rmsprop', 'adam'
   activation: relu      # One of: 'linear', 'sigmoid', 'tanh', 'relu'
   loss: kl_divergence   # One of: 'categorical_crossentropy', 'kl_divergence'
-  batch_size: 64
+  batch_size: 8
   epochs: 1
 
 topp_params:
-  num_games: 200
+  num_games: 20

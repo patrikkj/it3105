@@ -17,7 +17,7 @@ def main():
         # Agent 1
         #agent_1 = RandomAgent(env)
         #agent_1 = HumanHexAgentV2(env)
-        # agent_1 = NaiveMCTSAgent(env, n_simulations=400)
+        #agent_1 = NaiveMCTSAgent(env, n_simulations=4000)
         #agent_1 = MCTSAgent.from_config(env, config)
         #agent_1 = MCTSAgent.from_checkpoint(
         #    env=env, 
@@ -42,17 +42,33 @@ def main():
 
         # with EnvironmentLoop(env, agent_1, agent_2, framerate=20) as loop:
         #     loop.play_game()
+
+        # Play visuzliation game against random agent
+        #with EnvironmentLoop(env, agent_1, agent_2, framerate=20) as loop:
+        #    loop.play_game()
         
 
-        agents = MCTSAgent.from_agent_directory(
-            env=env, 
-            export_dir=config["export_dir"], 
-            #name="mctsagent__2021_04_13__15_53_57"
-            )
-            
-        with Tournament(env, agents, num_series=250) as tournament:
+
+        # Agent 1
+        agent_1 = MCTSAgent.from_config(env, config)
+        agent_1.learn()
+
+        # Agent 2
+        agent_2 = HumanHexAgentV2(env)
+        # Play visuzliation game against random agent
+        with EnvironmentLoop(env, agent_1, agent_2, framerate=20) as loop:
+            loop.play_game()
+
+        return
+        # Load all checkpoints from trained agent and play tournament
+        agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
+        with Tournament(env, agents, num_series=10) as tournament:
             tournament.play_tournament()
 
+        # Load all checkpoints from trained agent and play tournament
+        agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
+        with Tournament(env, [agent_1, agent_2], num_series=10) as tournament:
+            tournament.play_tournament()
 
 if __name__ == "__main__":
     main()

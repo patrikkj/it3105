@@ -79,7 +79,7 @@ class Tournament:
 
         print("\n ======= Tournament ======= ")
         for i, p in enumerate(participants, start=1):
-            print(f" ({i})    Agent {p.tid:<4}  W/L: {f'{p.wins}/{p.losses}':<6}  ({p.winrate:.2f}%)    Elo: {p.elo}")
+            print(f" ({i})    Agent {p.tid:<4}  W/L: {f'{p.wins}/{p.losses}':<6}  ({p.winrate*100:.2f}%)    Elo: {p.elo}")
 
     def __enter__(self):
         return self

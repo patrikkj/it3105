@@ -53,7 +53,7 @@ class MCTSAgent(LearningAgent):
         learner = MCTSLearner(
             env=env,
             tree_policy=tree_policy,
-            target_policy=actor,
+            target_policy=random_policy,
             network=network,
             replay_buffer=replay_buffer,
             agent_dir=agent_dir,
@@ -70,7 +70,7 @@ class MCTSAgent(LearningAgent):
         learner = MCTSLearner.deserialize(
             env=env,
             tree_policy=tree_policy,
-            target_policy=actor,
+            target_policy=random_policy,
             network=network,
             replay_buffer=replay_buffer,
             agent_dir=agent_dir)
@@ -106,5 +106,5 @@ class NaiveMCTSAgent(Agent):
             reward = mct.rollout(env_sim, leaf)
             mct.backpropagate(leaf, reward)
 
-        mct.visualize()
+        #mct.visualize()
         return self.tree_policy(root, c=0)
