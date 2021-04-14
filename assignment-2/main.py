@@ -21,15 +21,39 @@ def main():
         mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"],
             name="mctsagent__2021_04_13__22_14_49", episode=170)
 
-        # # 
+        # Custom
+        if True:
+            ...
+
+        # Deliverable 1
+        if False:
+            ...
 
 
-        # # Agent 1
+        # Deliverable 2
+        if False:
+            agent_1 = MCTSAgent.from_config(env, config).learn()
+            agent_2 = HumanHexAgentV2(env)
+            EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
+
+        # Deliverable 3
+        if False:
+            agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"],
+                                name="demo")
+            Tournament(env, agents, **config["topp_params"]).play_tournament()
+
+
+        # Deliverable 4
+        if False:
+            ...
+
+        # Deliverable 2
+        # Agent 1
         agent_1 = MCTSAgent.from_config(env, config)
-        # #agent_1 = mcts_ckpt
-        # #agent_1 = random
+        # agent_1 = mcts_ckpt
+        # agent_1 = random
         
-        # # Agent 2
+        # Agent 2
         # agent_2 = HumanHexAgentV2(env)
         
         # Play visuzliation game against random agent

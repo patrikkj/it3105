@@ -62,7 +62,8 @@ class MCTSAgent(LearningAgent):
         return cls(env, actor, learner, name=name, export_dir=export_dir)
 
     @classmethod
-    def from_checkpoint(cls, env, export_dir, name, episode):
+    def from_checkpoint(cls, env, export_dir, name=None, episode=0):
+        name = name or max(os.listdir(f"{export_dir}"))
         agent_dir = f"{export_dir}/{name}"
         network = ActorNetwork.from_checkpoint(env, agent_dir, episode)
         #assert network._model.layers[-1].shape[0] == env.spec.actions, "Dimension mismatch between environment and network dimensions"
