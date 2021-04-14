@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from itertools import combinations
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 from base import Agent
 
 
@@ -78,7 +81,21 @@ class Tournament:
 
         print("\n ======= Tournament ======= ")
         for i, p in enumerate(participants, start=1):
-            print(f" ({i})    Agent {p.tid:<4}  W/L: {f'{p.wins}/{p.losses}':<6}  ({p.winrate*100:.2f}%)")
+            try:
+                name = f"{p.agent.name} - {p.agent.learner._total_episodes}"
+            except:
+                name = p.tid
+            print(f" ({i:2})    Agent {name:<40}  W/L: {f'{p.wins}/{p.losses}':<6}  ({p.winrate*100:.2f}%)")
+
+        fig, ax = plt.subplots()
+        ax.bar(np.arange(len(participants)), [p.winrate for p in self.participants])
+        try:
+            ax.set_xticks(np.arange(len(participants)))
+            ax.set_xticklabels([str(p.agent.learner._total_episodes) for p in self.participants])
+        except:
+            pass
+        plt.show(block=True)
+        plt.close()
         
     def __enter__(self):
         return self

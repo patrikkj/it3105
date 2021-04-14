@@ -23,20 +23,21 @@ def main():
         #    name="mctsagent__2021_04_14__17_15_55", episode=200)
 
         # Agent 1
-        agent_1 = MCTSAgent.from_config(env, config).learn()
+        #agent_1 = MCTSAgent.from_config(env, config).learn()
         #agent_1 = mcts_ckpt
+        agent_1 = random
         
         # Agent 2
         agent_2 = HumanHexAgentV2(env)
         
         # Play visuzliation game against random agent
-        if True:
+        if False:
             EnvironmentLoop(env, agent_1, agent_2, framerate=20).play_game()
         if False:
             EnvironmentLoop(env, agent_1, agent_2, framerate=20).train_agents().play_game()
         if False:
             Tournament(env, [agent_1, agent_2], num_series=10).play_tournament()
-        if False:
+        if True:
             agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
             Tournament(env, agents, num_series=10).play_tournament()
 
