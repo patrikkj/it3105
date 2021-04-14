@@ -105,7 +105,7 @@ class HexEnvironment(StateManager):
         Also works on arrays of states.
         """
         pids, boards = np.split(state, (1,), axis=-1)
-        return np.atleast_2d(np.hstack((pids, boards==1, boards==2)))
+        return np.atleast_2d(np.hstack((pids - 1, boards==1, boards==2)))
 
 
     @staticmethod

@@ -1,0 +1,13 @@
+{
+    "optimizer": "sgd",
+    "activation": "relu",
+    "loss": "kl_divergence",
+    "alpha": 0.0001,
+    "layer_dims": [
+        256,
+        128,
+        64
+    ],
+    "batch_size": 8,
+    "epochs": 1
+}

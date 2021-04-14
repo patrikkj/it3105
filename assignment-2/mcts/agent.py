@@ -33,9 +33,10 @@ class MCTSAgent(LearningAgent):
         Creates a directory for storing agent state along with 
         checkpoints during the learning process.
         """
-        os.makedirs(self.agent_dir, exist_ok=False)
+        os.makedirs(self.agent_dir, exist_ok=True)
         self.learner.serialize(self.agent_dir)
         self.learner.learn()
+        return self
 
 
     # -------------------- #
@@ -61,7 +62,7 @@ class MCTSAgent(LearningAgent):
         return cls(env, actor, learner, name=name, export_dir=export_dir)
 
     @classmethod
-    def from_checkpoint(cls, env, export_dir, name, episode=0):
+    def from_checkpoint(cls, env, export_dir, name, episode):
         agent_dir = f"{export_dir}/{name}"
         network = ActorNetwork.from_checkpoint(env, agent_dir, episode)
         with open(f"{agent_dir}/checkpoints/{episode}_replay_buffer.p", "rb") as f:
@@ -74,14 +75,16 @@ class MCTSAgent(LearningAgent):
             network=network,
             replay_buffer=replay_buffer,
             agent_dir=agent_dir)
-        return cls(env, actor, learner, name=name, export_dir=export_dir)
+        agent = cls(env, actor, learner, name=name, export_dir=export_dir)
+        print(f"Successfully loaded MCTSAgent from '{agent_dir}' on episode {episode}\n")
+        return agent
 
     @classmethod
     def from_agent_directory(cls, env, export_dir, name=None):
         name = name or max(os.listdir(f"{export_dir}"))
         agent_dir = f"{export_dir}/{name}"
         episodes = sorted(list(map(int, filter(str.isnumeric, os.listdir(f"{agent_dir}/checkpoints")))))
-        return [cls.from_checkpoint(env, export_dir, name, ep) for ep in episodes]
+        return [cls.from_checkpoint(env, export_dir, name, episode=ep) for ep in episodes]
 
 class NaiveMCTSAgent(Agent):
     """Implements a subset of the functionality for the MCTS agent.

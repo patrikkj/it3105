@@ -1,5 +1,6 @@
-import numpy as np
+import random
 
+import numpy as np
 from base import Actor
 
 
@@ -9,7 +10,7 @@ class MCTSActor(Actor):
         self.network = network
         self._action_space = set(range(self.env.spec.actions))
 
-    def __call__(self, state, env=None):
+    def __call__(self, state, env=None, training=False):
         env = env or self.env
         state = env.decode_state(state)
         probs = self.network(state).numpy().flatten()

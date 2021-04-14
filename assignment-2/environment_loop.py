@@ -27,13 +27,14 @@ class EnvironmentLoop:
         for agent in self.agents:
             if isinstance(agent, LearningAgent):
                 agent.learn()
+        return self
 
     def play_turn(self):
         agent = self.pid_to_agent[self.current_pid]
         callable_ = agent.handle_mouse_event if hasattr(agent, "handle_mouse_event") else None
         self.env.render(block=False, pause=1/self.framerate, close=False, callable_=callable_)
         action = agent.get_action(self.current_state)
-        state, reward, is_terminal = self.env.move(action, self.current_pid)
+        state, _, _ = self.env.move(action, self.current_pid)
 
         # Update env-loop state
         self.current_state = state

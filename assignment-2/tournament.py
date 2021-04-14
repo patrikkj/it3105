@@ -12,7 +12,6 @@ class Participant:
     tid: int
     wins: int = 0
     losses: int = 0
-    elo: float = 1000
 
     @property
     def winrate(self):
@@ -79,8 +78,8 @@ class Tournament:
 
         print("\n ======= Tournament ======= ")
         for i, p in enumerate(participants, start=1):
-            print(f" ({i})    Agent {p.tid:<4}  W/L: {f'{p.wins}/{p.losses}':<6}  ({p.winrate*100:.2f}%)    Elo: {p.elo}")
-
+            print(f" ({i})    Agent {p.tid:<4}  W/L: {f'{p.wins}/{p.losses}':<6}  ({p.winrate*100:.2f}%)")
+        
     def __enter__(self):
         return self
 

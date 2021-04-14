@@ -1,32 +1,34 @@
 ---
 export_dir: "assignment-2/saves"
 
-nim_params:
-  N: 87
-  K: 5
-
 hex_params:
-  board_size: 4        # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
+  board_size: 4         # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
 
 buffer_params:
-  buffer_size: 100000
+  buffer_size: 100000   # Maximum number of cached games in the replay buffer
 
 learner_params:
-  n_episodes: 200
-  n_simulations: 400
-  save_interval: 10
-  batch_size: 8
+  n_episodes: 200                   # Number of actual games 
+  n_simulations: 400                # Number of simulation games per actual move
+  n_simulations_decay: 0.995        # Rate for adaptive number of rollouts by episode
+  n_simulations_step_decay: 0.99    # Rate for adaptive number of rollouts by search depth
+  save_interval: 10                 # Interval between generation of checkpoints
+  batch_size: 256                   # Size of minibatch from buffer
+  epsilon: 1                        # Initial rate of exploration
+  epsilon_decay: 0.99               # Exploration decay rate
 
 network_params:
-  alpha: 0.15           # Learning rate
+  alpha: 0.03           # Learning rate
+  alpha_decay: 0.99     # Learning rate decay (per episode)
   layer_dims:           # Num. of hidden layers
-    - 50
-    - 50
-  optimizer: adam        # One of: 'adagrad', 'sgd', 'rmsprop', 'adam'
+    - 256
+    - 128
+    - 64
+  optimizer: sgd        # One of: 'adagrad', 'sgd', 'rmsprop', 'adam'
   activation: relu      # One of: 'linear', 'sigmoid', 'tanh', 'relu'
   loss: kl_divergence   # One of: 'categorical_crossentropy', 'kl_divergence'
-  batch_size: 8
-  epochs: 1
+  batch_size: 1         # Number of samples per network batch
+  epochs: 1             # Number of training loops per extracted batch
 
 topp_params:
-  num_games: 20
+  num_games: 20         # Number of games in a single series during round-robin

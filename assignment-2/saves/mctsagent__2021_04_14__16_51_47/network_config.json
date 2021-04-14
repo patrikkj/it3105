@@ -1,0 +1,14 @@
+{
+    "optimizer": "adam",
+    "activation": "relu",
+    "loss": "kl_divergence",
+    "alpha": 0.1,
+    "alpha_decay": 0.99,
+    "layer_dims": [
+        256,
+        128,
+        64
+    ],
+    "batch_size": 1,
+    "epochs": 1
+}

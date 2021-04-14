@@ -29,17 +29,20 @@ class ActorNetwork(Actor):
     }
 
     def __init__(self, env,
-                 alpha=1e-4,
-                 layer_dims=None, 
-                 optimizer='adam',
-                 activation='relu',
-                 loss='categorical_crossentropy',
-                 batch_size=32,
-                 epochs=5):
+                 alpha,
+                 alpha_decay,
+                 layer_dims, 
+                 optimizer,
+                 activation,
+                 loss,
+                 batch_size,
+                 epochs, 
+                 _episodes=0):
         """
         Args:
             env:                    Environment, used to fetch action space specifications.
             alpha:                  Actor's learning rate.
+            alpha_decay:            Actor's learning rate decay.
             layer_dims:             Number of units within the models' hidden layers.
             optimizer:              Optimizer to be used for weight updates
             loss:                   Loss function used by the optimizer
@@ -51,6 +54,7 @@ class ActorNetwork(Actor):
         self.activation = activation
         self.loss = loss
         self.alpha = alpha
+        self.alpha_decay = alpha_decay
         self.layer_dims = layer_dims
         self.batch_size = batch_size
         self.epochs = epochs
@@ -60,7 +64,8 @@ class ActorNetwork(Actor):
         self._loss = ActorNetwork.losses[loss]
         self._model = self._build_model()
         self._checkpoint_dir = None     # Set by the serialization method
-
+        self._episodes = _episodes
+        
     @tf.function
     def __call__(self, state):
         """Returns the networks evaluation of a given state (observation)."""
@@ -69,6 +74,10 @@ class ActorNetwork(Actor):
     def get_action(self, state):
         return self(state)
 
+    def decay_learning_rate(self):
+        _alpha = tf.keras.backend.get_value(self._model.optimizer.learning_rate)
+        tf.keras.backend.set_value(self._model.optimizer.learning_rate, _alpha*self.alpha_decay)
+        
     def _build_model(self):
         """Builds the Keras mudel used as a state-value approximator."""
         try:
@@ -95,7 +104,8 @@ class ActorNetwork(Actor):
     
     def save(self, episode=0):
         # Save model parameters
-        tf.keras.models.save_model(self._model, f"{self._checkpoint_dir}/{episode}")
+        #tf.keras.models.save_model(self._model, f"{self._checkpoint_dir}/{episode}")
+        self._model.save(f"{self._checkpoint_dir}/{episode}")
     
 
     # -------------------- #
@@ -110,9 +120,20 @@ class ActorNetwork(Actor):
         self._checkpoint_dir = f"{agent_dir}/checkpoints"
 
     @classmethod
-    def from_checkpoint(cls, env, agent_dir, episode=0):
-        with open(f"{agent_dir}/network_config.json") as f:
+    def from_checkpoint(cls, env, agent_dir, episode):
+        config_path = f"{agent_dir}/network_config.json"
+        checkpoint_path = f"{agent_dir}/checkpoints/{episode}"
+
+        # Load config and create Network instance
+        with open(config_path) as f:
             config = json.load(f)
         obj = cls(env, **config)
-        obj.model = tf.keras.models.load_model(f"{agent_dir}/checkpoints/{episode}")
+        obj._episodes = episode
+
+        # Reload network parameters and recover adaptive learning rate
+        obj._model = tf.keras.models.load_model(checkpoint_path)
+        alpha = obj.alpha * obj.alpha_decay ** episode 
+        tf.keras.backend.set_value(obj._model.optimizer.learning_rate, alpha)
+        print(f"Setting alpha to: {alpha}")
+        print(f"Successfully loaded ActorNetwork [config={config_path}, checkpoint={checkpoint_path}]")
         return obj

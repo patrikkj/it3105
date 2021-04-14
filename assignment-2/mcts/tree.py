@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 import numpy as np
 import utils
+from .policy import random_policy
 
 
 @dataclass
@@ -53,10 +54,11 @@ class MCTree:
     This implementation assumes that the state representation starts with
     the ID of the player eligible to make the next move.
     """
-    def __init__(self, root, tree_policy, target_policy):
+    def __init__(self, root, tree_policy, target_policy, epsilon=0):
         self.root = root
         self.tree_policy = tree_policy          # Used for tree traversal (which is usually highly exploratory)
         self.target_policy = target_policy      # Used for rollout simulation (default policy) (ActorNetwork in this case)
+        self.epsilon = epsilon                  # Rate of exploration for this particular simulation tree
         #MCNode.from_state.cache_clear()         # Clears the node state memoization cache
         #print(MCNode.from_state.cache_info())
         
@@ -107,7 +109,10 @@ class MCTree:
         player = node.player
         state = node.state
         while not env.is_finished():
-            action = self.target_policy(state, env=env)
+            if random.random() < self.epsilon:
+                action = random_policy(state, env=env)
+            else:
+                action = self.target_policy(state, env=env)
             state, reward, _ = env.move(action, player)
             player = player % 2 + 1
         return reward
