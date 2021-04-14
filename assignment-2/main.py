@@ -3,8 +3,8 @@ import yaml
 from agents import (HumanHexAgent, HumanHexAgentV2, MCTSAgent, NaiveMCTSAgent,
                     RandomAgent)
 from environment_loop import EnvironmentLoop
-from tournament import Tournament
 from envs.hex import HexEnvironment
+from tournament import Tournament
 from utils import debug
 
 # Load configuration
@@ -17,9 +17,8 @@ def main():
         # Agents
         random = RandomAgent(env)
         human = HumanHexAgentV2(env)                   
-        mcts = MCTSAgent.from_config(env, config)
-        mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"],
-            name="mctsagent__2021_04_13__22_14_49", episode=170)
+        mcts = MCTSAgent.from_config(env, config).learn()
+        #mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"], episode=0)
 
         # Custom
         if True:
@@ -38,8 +37,7 @@ def main():
 
         # Deliverable 3
         if False:
-            agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"],
-                                name="demo")
+            agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
             Tournament(env, agents, **config["topp_params"]).play_tournament()
 
 
@@ -63,9 +61,8 @@ def main():
         #     EnvironmentLoop(env, agent_1, agent_2, framerate=20).train_agents().play_game()
         # if False:
         #     Tournament(env, [agent_1, agent_2], num_series=10).play_tournament()
-        if True:
-            agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"],
-                                name="demo")
+        if False:
+            agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
             Tournament(env, agents, **config["topp_params"]).play_tournament()
 
 

@@ -1,4 +1,3 @@
-import glob
 import os
 import pickle
 from datetime import datetime
@@ -6,6 +5,7 @@ from datetime import datetime
 from base import Agent, LearningAgent
 from network import ActorNetwork
 from replay import ReplayBuffer
+from utils import timeit
 
 from .actor import MCTSActor
 from .learner import MCTSLearner
@@ -23,10 +23,11 @@ class MCTSAgent(LearningAgent):
         self.name = name or f"mctsagent__{datetime.now():%Y_%m_%d__%H_%M_%S}"
         self.export_dir = export_dir
         self.agent_dir = f"{export_dir}/{name}"
-
+    
     def get_action(self, state, use_probs=False):
         return self.actor(state, env=self.env, use_probs=use_probs)
-
+    
+    @timeit
     def learn(self):
         """
         Start learning via monte carlo simulations.

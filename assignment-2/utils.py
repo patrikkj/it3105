@@ -1,7 +1,8 @@
-from graphviz import Digraph
-
 import cProfile
+import time
 from functools import wraps
+
+from graphviz import Digraph
 
 i = 0
 class Node():
@@ -21,6 +22,16 @@ def debug(func):
         pr.print_stats(sort=1)
         return out
     return wrapper
+
+def timeit(method):
+    def timed(*args, **kw):
+        ts = time.perf_counter()
+        result = method(*args, **kw)
+        te = time.perf_counter()
+        diff = te - ts
+        print(f"{method.__name__}: {diff:.8f} s")
+        return result
+    return timed
 
 def flatten_nodes(node, successor_attr='children'):
     # base case
