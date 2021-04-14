@@ -10,7 +10,7 @@ class MCTSActor(Actor):
         self.network = network
         self._action_space = set(range(self.env.spec.actions))
 
-    def __call__(self, state, env=None, training=False):
+    def __call__(self, state, env=None, use_probs=False):
         env = env or self.env
         state = env.decode_state(state)
         probs = self.network(state).numpy().flatten()
@@ -19,4 +19,8 @@ class MCTSActor(Actor):
         legal_actions = env.get_legal_actions()
         illegal_actions = legal_actions ^ self._action_space
         probs[list(illegal_actions)] = 0
-        return np.argmax(probs)
+        if use_probs:
+            probs = probs / probs.sum()
+            return np.random.choice(range(probs.size), p=probs)
+        else:
+            return np.argmax(probs)

@@ -16,30 +16,33 @@ def main():
     with HexEnvironment(**config["hex_params"]) as env:
         # Agents
         random = RandomAgent(env)
-        human = HumanHexAgentV2(env)
-        mcts_naive = NaiveMCTSAgent(env, n_simulations=4000)
+        human = HumanHexAgentV2(env)                   
         mcts = MCTSAgent.from_config(env, config)
-        #mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"],
-        #    name="mctsagent__2021_04_14__17_15_55", episode=200)
+        mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"],
+            name="mctsagent__2021_04_13__22_14_49", episode=170)
 
-        # Agent 1
-        #agent_1 = MCTSAgent.from_config(env, config).learn()
-        #agent_1 = mcts_ckpt
-        agent_1 = random
+        # # 
+
+
+        # # Agent 1
+        agent_1 = MCTSAgent.from_config(env, config)
+        # #agent_1 = mcts_ckpt
+        # #agent_1 = random
         
-        # Agent 2
-        agent_2 = HumanHexAgentV2(env)
+        # # Agent 2
+        # agent_2 = HumanHexAgentV2(env)
         
         # Play visuzliation game against random agent
-        if False:
-            EnvironmentLoop(env, agent_1, agent_2, framerate=20).play_game()
-        if False:
-            EnvironmentLoop(env, agent_1, agent_2, framerate=20).train_agents().play_game()
-        if False:
-            Tournament(env, [agent_1, agent_2], num_series=10).play_tournament()
+        #if True:
+        #    EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
+        # if False:
+        #     EnvironmentLoop(env, agent_1, agent_2, framerate=20).train_agents().play_game()
+        # if False:
+        #     Tournament(env, [agent_1, agent_2], num_series=10).play_tournament()
         if True:
-            agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
-            Tournament(env, agents, num_series=10).play_tournament()
+            agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"],
+                                name="demo")
+            Tournament(env, agents, **config["topp_params"]).play_tournament()
 
 
 if __name__ == "__main__":

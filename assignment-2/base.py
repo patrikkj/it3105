@@ -92,28 +92,17 @@ class StateManager:
 
 class Actor:
     @abstractmethod
-    def get_action(self, state):
+    def get_action(self, state, env=None, use_probs=False):
         ...
 
 class Learner:
     @abstractmethod
     def learn(self):
         ...
-    
-    @abstractmethod
-    def step(self):
-        ...
 
 class Agent:
     @abstractmethod
     def get_action(self, state):
-        ...
-
-    def update(self):
-        """
-        Agents can optionally override this method to perform learning
-        on the agents' underlying actor.
-        """
         ...
 
 class LearningAgent(Agent):
@@ -123,8 +112,4 @@ class LearningAgent(Agent):
 
     @abstractmethod
     def save(self):
-        ...
-
-    @abstractmethod
-    def load(self):
         ...

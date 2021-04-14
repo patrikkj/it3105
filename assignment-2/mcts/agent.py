@@ -24,8 +24,8 @@ class MCTSAgent(LearningAgent):
         self.export_dir = export_dir
         self.agent_dir = f"{export_dir}/{name}"
 
-    def get_action(self, state):
-        return self.actor(state, env=self.env)
+    def get_action(self, state, use_probs=False):
+        return self.actor(state, env=self.env, use_probs=use_probs)
 
     def learn(self):
         """
@@ -54,7 +54,7 @@ class MCTSAgent(LearningAgent):
         learner = MCTSLearner(
             env=env,
             tree_policy=tree_policy,
-            target_policy=random_policy,
+            target_policy=actor,
             network=network,
             replay_buffer=replay_buffer,
             agent_dir=agent_dir,
@@ -65,6 +65,7 @@ class MCTSAgent(LearningAgent):
     def from_checkpoint(cls, env, export_dir, name, episode):
         agent_dir = f"{export_dir}/{name}"
         network = ActorNetwork.from_checkpoint(env, agent_dir, episode)
+        #assert network._model.layers[-1].shape[0] == env.spec.actions, "Dimension mismatch between environment and network dimensions"
         with open(f"{agent_dir}/checkpoints/{episode}_replay_buffer.p", "rb") as f:
             replay_buffer = pickle.load(f)
         actor = MCTSActor(env, network)

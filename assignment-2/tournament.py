@@ -32,10 +32,10 @@ class Tournament:
         PID = Player ID
         TID = Participant (tournament) ID
     """
-    def __init__(self, env, agents, num_series=25, framerate=1):
+    def __init__(self, env, agents, num_games=25, framerate=1):
         self.env = env
         self.participants = [Participant.from_agent(agent) for agent in agents]
-        self.num_series = num_series
+        self.num_games = num_games
         self.framerate = framerate
 
     @staticmethod
@@ -60,7 +60,10 @@ class Tournament:
         # Execute game loop
         while not self.env.is_finished():
             participant, pid = next(participant_gen)
-            action = participant.agent.get_action(state)
+            try:
+                action = participant.agent.get_action(state, use_probs=True)
+            except:
+                action = participant.agent.get_action(state)
             state, _, _ = self.env.move(action, pid)
             
         # Assign winner
@@ -70,7 +73,7 @@ class Tournament:
     def play_tournament(self):
         matches = Tournament.round_robin(self.participants)
         for participant_1, participant_2 in matches:
-            for game in range(self.num_series):
+            for game in range(self.num_games):
                 reverse = bool(game % 2)
                 self.play_game(participant_1, participant_2, reverse=reverse)
         self.print_summary()

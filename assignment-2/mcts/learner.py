@@ -101,7 +101,7 @@ class MCTSLearner(Learner):
 
         # At the end of each game, fetch training examples and update network weights
         x_batch, y_batch = self._replay_buffer.fetch_minibatch(batch_size=self.batch_size)
-        self._network.train(x_batch, y_batch)
+        history = self._network.train(x_batch, y_batch)
         self._network.decay_learning_rate()
 
 

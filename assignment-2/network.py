@@ -80,10 +80,7 @@ class ActorNetwork(Actor):
         
     def _build_model(self):
         """Builds the Keras mudel used as a state-value approximator."""
-        try:
-            input_spec = self.env.decode_state(self.env.get_initial_observation()).size
-        except:
-            input_spec = self.env.spec.observations
+        input_spec = self.env.decode_state(self.env.get_initial_observation()).size
         output_spec = self.env.spec.actions
 
         model = tf.keras.Sequential([
@@ -100,11 +97,10 @@ class ActorNetwork(Actor):
 
     def train(self, x, y):
         x = self.env.decode_state(x)
-        self._model.fit(x, y, epochs=self.epochs, batch_size=self.batch_size)
+        return self._model.fit(x, y, epochs=self.epochs, batch_size=self.batch_size)
     
     def save(self, episode=0):
         # Save model parameters
-        #tf.keras.models.save_model(self._model, f"{self._checkpoint_dir}/{episode}")
         self._model.save(f"{self._checkpoint_dir}/{episode}")
     
 
@@ -127,7 +123,7 @@ class ActorNetwork(Actor):
         # Load config and create Network instance
         with open(config_path) as f:
             config = json.load(f)
-        obj = cls(env, **config)
+        obj = ActorNetwork(env, **config)
         obj._episodes = episode
 
         # Reload network parameters and recover adaptive learning rate
