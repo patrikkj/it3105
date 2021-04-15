@@ -24,6 +24,7 @@ class MCTSLearner(Learner):
                  agent_dir,
                  epsilon,
                  epsilon_decay,
+                 uct_coeff,
                  _total_episodes=0):
         self.env = env                          # Game environment
         self._tree_policy = tree_policy         # Used for tree traversal (which is usually highly exploratory)
@@ -39,6 +40,7 @@ class MCTSLearner(Learner):
         self.agent_dir = agent_dir
         self.epsilon = epsilon                  # Initial rate of exploration
         self.epsilon_decay = epsilon_decay      # Exploration decay rate
+        self.uct_coeff = uct_coeff              # Exploration coefficient for tree policy
         
         # Internal variables for book-keeping
         self._total_episodes = _total_episodes
@@ -83,7 +85,7 @@ class MCTSLearner(Learner):
         
         # Build a new monte-carlo tree for this particular game
         self.root = root = MCNode.from_state(env.get_initial_observation())
-        self.mct = mct = MCTree(root, self._tree_policy, self._target_policy, epsilon=epsilon)
+        self.mct = mct = MCTree(root, self._tree_policy, self._target_policy, epsilon=epsilon, uct_coeff=self.uct_coeff)
 
         self._step = 1
         while not env.is_finished():

@@ -54,11 +54,12 @@ class MCTree:
     This implementation assumes that the state representation starts with
     the ID of the player eligible to make the next move.
     """
-    def __init__(self, root, tree_policy, target_policy, epsilon=0):
+    def __init__(self, root, tree_policy, target_policy, epsilon=0, uct_coeff=1):
         self.root = root
         self.tree_policy = tree_policy          # Used for tree traversal (which is usually highly exploratory)
         self.target_policy = target_policy      # Used for rollout simulation (default policy) (ActorNetwork in this case)
         self.epsilon = epsilon                  # Rate of exploration for this particular simulation tree
+        self.uct_coeff = uct_coeff              # Exploration coefficient for tree policy
         #MCNode.from_state.cache_clear()         # Clears the node state memoization cache
         #print(MCNode.from_state.cache_info())
         
@@ -68,7 +69,7 @@ class MCTree:
         """
         node = self.root
         while node.successors:
-            action = self.tree_policy(node)
+            action = self.tree_policy(node, c=self.uct_coeff)
             env.move(action, node.player)
             node = node.successors[action]
         return node
@@ -93,7 +94,7 @@ class MCTree:
             node.successors[action] = successor
 
         # Traverse to the most suitable among the newly expanded nodes
-        action = self.tree_policy(node)
+        action = self.tree_policy(node, c=self.uct_coeff)
         env.move(action, node.player)
         node = node.successors[action]
         return node
