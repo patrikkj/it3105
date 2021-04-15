@@ -1,3 +1,5 @@
+import numpy as np
+import tensorflow as tf
 import yaml
 
 from agents import (HumanHexAgent, HumanHexAgentV2, MCTSAgent, NaiveMCTSAgent,
@@ -7,69 +9,41 @@ from envs.hex import HexEnvironment
 from tournament import Tournament
 from utils import debug
 
+tf.random.set_seed(1)
+np.random.seed(1)
+
 # Load configuration
-CONFIG_PATH = "./assignment-2/config.yml"
+CONFIG_PATH = "./assignment-2/config_topp.yml"   # config.yml / config_topp.json
 with open(CONFIG_PATH) as f:
-    config = yaml.load(f, Loader=yaml.FullLoader)
+   config = yaml.load(f, Loader=yaml.FullLoader)
+
 
 def main():
     with HexEnvironment(**config["hex_params"]) as env:
         # Agents
-        random = RandomAgent(env)
-        human = HumanHexAgentV2(env)
+        #random = RandomAgent(env)
+        #human = HumanHexAgentV2(env)
         #mcts = MCTSAgent.from_config(env, config).learn()
         #mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"], episode=100)
 
-        # Custom
-        if False:
-            ...
-
-        # Training agent from configuration file
+        # Test a few pivotal parameters
         if False:
             agent_1 = MCTSAgent.from_config(env, config).learn()
             agent_2 = HumanHexAgentV2(env)
             EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
 
-        # Deliverable 2
+        # Train a set of agents and run a short tournament (use 'config_topp.json')
         if False:
+            # Train agent and play against it
             agent_1 = MCTSAgent.from_config(env, config).learn()
             agent_2 = HumanHexAgentV2(env)
             EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
-
-        # Deliverable 3
-        if False:
-            agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
-            Tournament(env, agents, **config["topp_params"]).play_tournament()
-
-        # Deliverable 4
-        if False:
-            #agent_1 = mcts_ckpt
-            agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
-            agent_1 = agents[-1]
-            agent_2 = HumanHexAgentV2(env)
-            Tournament(env, agents, **config["topp_params"]).play_tournament()
-            #EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
-
-        # Deliverable 2
-        # Agent 1
-        #agent_1 = MCTSAgent.from_config(env, config)
-        # agent_1 = mcts_ckpt
-        # agent_1 = random
         
-        # Agent 2
-        # agent_2 = HumanHexAgentV2(env)
-        
-        # Play visuzliation game against random agent
-        #if True:
-        #    EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
-        # if False:
-        #     EnvironmentLoop(env, agent_1, agent_2, framerate=20).train_agents().play_game()
-        # if False:
-        #     Tournament(env, [agent_1, agent_2], num_series=10).play_tournament()
+        # Load progressive policies from directory and run tournament
         if True:
             agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
             Tournament(env, agents, **config["topp_params"]).play_tournament()
-
+    
 
 if __name__ == "__main__":
     main()
