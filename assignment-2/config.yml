@@ -9,13 +9,13 @@ buffer_params:
 
 learner_params:
   n_episodes: 100                    # Number of actual games 
-  n_simulations: 400                 # Number of simulation games per actual move
+  n_simulations: 200                 # Number of simulation games per actual move
   n_simulations_decay: 1          # Rate for adaptive number of rollouts by episode
   n_simulations_step_decay: 1    # Rate for adaptive number of rollouts by search depth
   save_interval: 20                 # Interval between generation of checkpoints
   batch_size: 256                   # Size of minibatch from buffer
   epsilon: 1                        # Initial rate of exploration
-  epsilon_decay: 1               # Exploration decay rate
+  epsilon_decay: 0.99               # Exploration decay rate
   uct_coeff: 1.0                    # Exploration coefficient for tree policy
 
 network_params:

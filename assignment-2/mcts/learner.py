@@ -64,7 +64,8 @@ class MCTSLearner(Learner):
         if self._total_episodes == 0:
             self.save()
 
-        for _ in range(episodes):
+        for ep in range(episodes):
+            print(f"                Episode {ep}/{episodes}")
             env_actual = self.env.reset()
             self.episode(env_actual)
             self._episode += 1
@@ -88,7 +89,7 @@ class MCTSLearner(Learner):
 
         self._step = 1
         while not env.is_finished():
-            for _ in range(int(n_simulations)):
+            for sim in range(int(n_simulations)):
                 env_sim = env.copy()
                 leaf = mct.search(env_sim)
                 leaf = mct.node_expansion(env_sim, leaf)
