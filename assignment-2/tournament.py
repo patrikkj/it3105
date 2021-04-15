@@ -54,8 +54,6 @@ class Tournament:
         self.env.reset()
         
         # Fetch starting Player ID and generate play order
-        print(np.sum([np.sum(w) for w in agent_1.agent.actor.network._model.trainable_weights]))
-        print(np.sum([np.sum(w) for w in agent_2.agent.actor.network._model.trainable_weights]))
         participant_gen = Tournament.alternate(agent_1, agent_2, reverse=reverse)
         state = self.env.get_initial_observation()
 

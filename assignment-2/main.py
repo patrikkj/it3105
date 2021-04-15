@@ -1,7 +1,9 @@
 import numpy as np
 import tensorflow as tf
 import yaml
-
+import os
+#sys.path.append("/Users/patrikkj/git/patrikkj/it3105/")
+os.chdir("/Users/patrikkj/git/patrikkj/it3105")
 from agents import (HumanHexAgent, HumanHexAgentV2, MCTSAgent, NaiveMCTSAgent,
                     RandomAgent)
 from environment_loop import EnvironmentLoop
@@ -17,17 +19,11 @@ np.random.seed(0)
 with open("./assignment-2/config.yml") as f:
    config = yaml.load(f, Loader=yaml.FullLoader)
 
-with open("./assignment-2/config_topp.yml") as f:
-   config_topp = yaml.load(f, Loader=yaml.FullLoader)
+# with open("./assignment-2/config_topp.yml") as f:
+#    config = yaml.load(f, Loader=yaml.FullLoader)
 
-
+@debug
 def main():
-    # Agents
-    #random = RandomAgent(env)
-    #human = HumanHexAgentV2(env)
-    #mcts = MCTSAgent.from_config(env, config).learn()
-    #mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"], episode=100)
-    
 
     ############################
     #   PRELIMINARY TESTING    #
@@ -36,17 +32,23 @@ def main():
     # Illustration game between a Naíve MCTS and a random agent
     if False:
         with HexEnvironment(**config["hex_params"]) as env:
-            agent_1 = NaiveMCTSAgent(env, n_simulations=2000)
-            agent_2 = RandomAgent(env)
+            agent_1 = NaiveMCTSAgent(env, n_simulations=10_000)
+            agent_2 = HumanHexAgentV2(env)
             EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
     
     # Test a few pivotal parameters
-    config = config_topp  # this uses 'config_topp.yml'
-    if False:
+    if True:
         with HexEnvironment(**config["hex_params"]) as env:
-            agent_1 = MCTSAgent.from_config(env, config).learn()
+            agent_1 = MCTSAgent.from_checkpoint(
+                env, 
+                config["export_dir"], 
+                name="candidate_oht", 
+                episode=420).learn(episodes=20)
+            
+            #agent_1 = MCTSAgent.from_config(env, config).learn()
             agent_2 = HumanHexAgentV2(env)
-            EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
+            while input() != "quit":
+                EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
 
 
     ###################

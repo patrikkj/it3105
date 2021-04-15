@@ -28,7 +28,7 @@ class MCTSAgent(LearningAgent):
         return self.actor(state, env=self.env, use_probs=use_probs)
     
     @timeit
-    def learn(self):
+    def learn(self, episodes=None):
         """
         Start learning via monte carlo simulations.
         Creates a directory for storing agent state along with 
@@ -36,7 +36,7 @@ class MCTSAgent(LearningAgent):
         """
         os.makedirs(self.agent_dir, exist_ok=True)
         self.learner.serialize(self.agent_dir)
-        self.learner.learn()
+        self.learner.learn(episodes=episodes)
         return self
 
 

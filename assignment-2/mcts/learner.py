@@ -80,8 +80,8 @@ class MCTSLearner(Learner):
     def episode(self, env):
         """Does one iteration of learning."""
         # Compute adaptive parameters
-        epsilon = self.epsilon * self.epsilon_decay**self._episode
-        n_simulations = self.n_simulations * self.n_simulations_decay**self._episode
+        epsilon = self.epsilon * self.epsilon_decay**self._total_episodes
+        n_simulations = self.n_simulations * self.n_simulations_decay**self._total_episodes
         
         # Build a new monte-carlo tree for this particular game
         self.root = root = MCNode.from_state(env.get_initial_observation())
@@ -121,7 +121,7 @@ class MCTSLearner(Learner):
     def serialize(self, agent_dir):
         # Save state of current instance (Exclude private members and env. reference)
         config = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
-        del config['env']
+        del config['env'], config['agent_dir']
         with open(f"{self.agent_dir}/learner_config.json", 'w') as f:
             json.dump(config, f, indent=4)
         self._checkpoint_dir = f"{agent_dir}/checkpoints"
@@ -134,4 +134,4 @@ class MCTSLearner(Learner):
             config = json.load(f)
         print(f"Successfully loaded MCTSLearner [config={config_path}]")
         return cls(env, tree_policy, target_policy, network, replay_buffer,
-                   _total_episodes=network._episodes, **config)
+                   _total_episodes=network._episodes, agent_dir=agent_dir, **config)
