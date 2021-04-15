@@ -9,38 +9,59 @@ from envs.hex import HexEnvironment
 from tournament import Tournament
 from utils import debug
 
-tf.random.set_seed(1)
-np.random.seed(1)
+tf.random.set_seed(0)
+np.random.seed(0)
 
-# Load configuration
-CONFIG_PATH = "./assignment-2/config_topp.yml"   # config.yml / config_topp.json
-with open(CONFIG_PATH) as f:
+
+# Load configurations
+with open("./assignment-2/config.yml") as f:
    config = yaml.load(f, Loader=yaml.FullLoader)
+
+with open("./assignment-2/config_topp.yml") as f:
+   config_topp = yaml.load(f, Loader=yaml.FullLoader)
 
 
 def main():
-    with HexEnvironment(**config["hex_params"]) as env:
-        # Agents
-        #random = RandomAgent(env)
-        #human = HumanHexAgentV2(env)
-        #mcts = MCTSAgent.from_config(env, config).learn()
-        #mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"], episode=100)
+    # Agents
+    #random = RandomAgent(env)
+    #human = HumanHexAgentV2(env)
+    #mcts = MCTSAgent.from_config(env, config).learn()
+    #mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"], episode=100)
+    
 
-        # Test a few pivotal parameters
-        if False:
+    ############################
+    #   PRELIMINARY TESTING    #
+    ############################
+
+    # Illustration game between a Naíve MCTS and a random agent
+    if False:
+        with HexEnvironment(**config["hex_params"]) as env:
+            agent_1 = NaiveMCTSAgent(env, n_simulations=2000)
+            agent_2 = RandomAgent(env)
+            EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
+    
+    # Test a few pivotal parameters
+    if False:
+        with HexEnvironment(**config["hex_params"]) as env:
             agent_1 = MCTSAgent.from_config(env, config).learn()
             agent_2 = HumanHexAgentV2(env)
             EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
 
-        # Train a set of agents and run a short tournament (use 'config_topp.json')
-        if False:
-            # Train agent and play against it
-            agent_1 = MCTSAgent.from_config(env, config).learn()
+
+    ###################
+    #   TOURNAMENT    #
+    ###################
+
+    # Train a set of agents and run a short tournament (this uses 'config_topp.yml')
+    if False:
+        with HexEnvironment(**config_topp["hex_params"]) as env:
+            agent_1 = MCTSAgent.from_config(env, config_topp).learn()
             agent_2 = HumanHexAgentV2(env)
             EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
-        
-        # Load progressive policies from directory and run tournament
-        if True:
+    
+    # Load progressive policies from directory and plays tournament
+    if False:
+        with HexEnvironment(**config["hex_params"]) as env:
             agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
             Tournament(env, agents, **config["topp_params"]).play_tournament()
     

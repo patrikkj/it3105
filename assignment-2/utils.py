@@ -5,14 +5,6 @@ from functools import wraps
 from graphviz import Digraph
 
 i = 0
-class Node():
-    def __init__(self, identifier, children=None):
-        self.identifier = identifier
-        self.children = children if children is not None else []
-
-    def __str__(self):
-        return self.identifier
-
 
 def debug(func):
     @wraps(func)
@@ -83,22 +75,3 @@ def visualize_graph(root,
     # Plot graph
     if show:
         g.view()
-
-def main():
-    n1 = Node('A')
-    n2 = Node('B')
-    n3 = Node('C')
-    n4 = Node('D')
-    n5 = Node('E')
-    n6 = Node('F')
-    n7 = Node('G')
-
-    n1.children = [n2, n7]
-    n2.children = [n3, n4]
-    n4.children = [n5, n6]
-
-    print(flatten_nodes(n1, successor_attr='children'))
-    visualize_graph(n1,file_prefix='test', successor_attr='children', show=True)
-
-if __name__ == '__main__':
-    main()
