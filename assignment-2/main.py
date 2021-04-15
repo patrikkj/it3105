@@ -41,6 +41,7 @@ def main():
             EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
     
     # Test a few pivotal parameters
+    config = config_topp  # this uses 'config_topp.yml'
     if False:
         with HexEnvironment(**config["hex_params"]) as env:
             agent_1 = MCTSAgent.from_config(env, config).learn()
@@ -51,13 +52,6 @@ def main():
     ###################
     #   TOURNAMENT    #
     ###################
-
-    # Train a set of agents and run a short tournament (this uses 'config_topp.yml')
-    if False:
-        with HexEnvironment(**config_topp["hex_params"]) as env:
-            agent_1 = MCTSAgent.from_config(env, config_topp).learn()
-            agent_2 = HumanHexAgentV2(env)
-            EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
     
     # Load progressive policies from directory and plays tournament
     if False:

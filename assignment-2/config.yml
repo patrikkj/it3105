@@ -2,7 +2,7 @@
 export_dir: "assignment-2/saves"
 
 hex_params:
-  board_size: 5         # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
+  board_size: 4         # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
 
 buffer_params:
   buffer_size: 100000   # Maximum number of cached games in the replay buffer
