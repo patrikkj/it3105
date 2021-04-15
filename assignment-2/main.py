@@ -21,7 +21,7 @@ def main():
         #mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"], episode=0)
 
         # Custom
-        if True:
+        if False:
             ...
 
         # Deliverable 1
@@ -47,7 +47,7 @@ def main():
 
         # Deliverable 2
         # Agent 1
-        agent_1 = MCTSAgent.from_config(env, config)
+        #agent_1 = MCTSAgent.from_config(env, config)
         # agent_1 = mcts_ckpt
         # agent_1 = random
         

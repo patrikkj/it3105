@@ -9,12 +9,12 @@ buffer_params:
 
 learner_params:
   n_episodes: 200                    # Number of actual games 
-  n_simulations: 400                # Number of simulation games per actual move
-  n_simulations_decay: 0.995        # Rate for adaptive number of rollouts by episode
-  n_simulations_step_decay: 0.99    # Rate for adaptive number of rollouts by search depth
-  save_interval: 30                 # Interval between generation of checkpoints
-  batch_size: 256                   # Size of minibatch from buffer
-  epsilon: 1                        # Initial rate of exploration
+  n_simulations: 50                # Number of simulation games per actual move
+  n_simulations_decay: 0.99        # Rate for adaptive number of rollouts by episode
+  n_simulations_step_decay: 0.95    # Rate for adaptive number of rollouts by search depth
+  save_interval: 20                 # Interval between generation of checkpoints
+  batch_size: 128                   # Size of minibatch from buffer
+  epsilon: 2                        # Initial rate of exploration
   epsilon_decay: 0.99               # Exploration decay rate
 
 network_params:
@@ -31,4 +31,4 @@ network_params:
   epochs: 1             # Number of training loops per extracted batch
 
 topp_params:
-  num_games: 20         # Number of games in a single series during round-robin
+  num_games: 100         # Number of games in a single series during round-robin

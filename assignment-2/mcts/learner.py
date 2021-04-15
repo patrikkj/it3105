@@ -3,9 +3,10 @@ import pickle
 
 import numpy as np
 from base import Learner
+import matplotlib.pyplot as plt
 
 from .tree import MCNode, MCTree
-
+from utils import timeit
 
 class MCTSLearner(Learner):
     def __init__(self, 
@@ -43,6 +44,7 @@ class MCTSLearner(Learner):
         self._total_episodes = _total_episodes
         self._episode = 1
         self._step = 1
+        self._loss = []
 
     def save(self):
         """Creates a checkpoint of the network and state of replay buffer."""
@@ -50,7 +52,7 @@ class MCTSLearner(Learner):
         with open(f"{self.agent_dir}/checkpoints/{self._total_episodes}_replay_buffer.p", "wb") as f:
             pickle.dump(self._replay_buffer, f)
 
-    def learn(self, episodes=None):
+    def learn(self, episodes=None, plot_loss=True):
         """
         Does 'self.n_episodes' iterations of learning.
         Also saves network state every now and then.
@@ -68,6 +70,11 @@ class MCTSLearner(Learner):
             if self._total_episodes % self.save_interval == 0:
                 self.save()
 
+        if plot_loss:
+            plt.plot(self._loss)
+            plt.show()
+
+    @timeit
     def episode(self, env):
         """Does one iteration of learning."""
         # Compute adaptive parameters
@@ -102,6 +109,7 @@ class MCTSLearner(Learner):
         # At the end of each game, fetch training examples and update network weights
         x_batch, y_batch = self._replay_buffer.fetch_minibatch(batch_size=self.batch_size)
         history = self._network.train(x_batch, y_batch)
+        self._loss.append(np.mean(history.history["loss"]))
         self._network.decay_learning_rate()
 
 
