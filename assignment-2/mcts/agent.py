@@ -74,7 +74,7 @@ class MCTSAgent(LearningAgent):
         learner = MCTSLearner.deserialize(
             env=env,
             tree_policy=tree_policy,
-            target_policy=random_policy,
+            target_policy=actor,
             network=network,
             replay_buffer=replay_buffer,
             agent_dir=agent_dir)

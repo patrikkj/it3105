@@ -5,18 +5,18 @@ hex_params:
   board_size: 4         # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
 
 buffer_params:
-  buffer_size: 256   # Maximum number of cached games in the replay buffer
+  buffer_size: 100000   # Maximum number of cached games in the replay buffer
 
 learner_params:
-  n_episodes: 200                    # Number of actual games 
-  n_simulations: 50                # Number of simulation games per actual move
-  n_simulations_decay: 1        # Rate for adaptive number of rollouts by episode
-  n_simulations_step_decay: 0.95    # Rate for adaptive number of rollouts by search depth
+  n_episodes: 100                    # Number of actual games 
+  n_simulations: 400                 # Number of simulation games per actual move
+  n_simulations_decay: 1          # Rate for adaptive number of rollouts by episode
+  n_simulations_step_decay: 1    # Rate for adaptive number of rollouts by search depth
   save_interval: 20                 # Interval between generation of checkpoints
-  batch_size: 128                   # Size of minibatch from buffer
-  epsilon: 2                        # Initial rate of exploration
-  epsilon_decay: 0.99               # Exploration decay rate
-  uct_coeff: 4.0                    # Exploration coefficient for tree policy
+  batch_size: 256                   # Size of minibatch from buffer
+  epsilon: 1                        # Initial rate of exploration
+  epsilon_decay: 1               # Exploration decay rate
+  uct_coeff: 1.0                    # Exploration coefficient for tree policy
 
 network_params:
   alpha: 0.03           # Learning rate
@@ -32,4 +32,4 @@ network_params:
   epochs: 1             # Number of training loops per extracted batch
 
 topp_params:
-  num_games: 100         # Number of games in a single series during round-robin
+  num_games: 20         # Number of games in a single series during round-robin

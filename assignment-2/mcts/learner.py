@@ -54,7 +54,7 @@ class MCTSLearner(Learner):
         with open(f"{self.agent_dir}/checkpoints/{self._total_episodes}_replay_buffer.p", "wb") as f:
             pickle.dump(self._replay_buffer, f)
 
-    def learn(self, episodes=None, plot_loss=True):
+    def learn(self, episodes=None):
         """
         Does 'self.n_episodes' iterations of learning.
         Also saves network state every now and then.
@@ -71,10 +71,9 @@ class MCTSLearner(Learner):
             self._total_episodes += 1
             if self._total_episodes % self.save_interval == 0:
                 self.save()
-
-        if plot_loss:
-            plt.plot(self._loss)
-            plt.show()
+                
+        plt.plot(self._loss)
+        plt.show()
 
     @timeit
     def episode(self, env):

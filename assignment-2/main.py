@@ -17,17 +17,18 @@ def main():
         # Agents
         random = RandomAgent(env)
         human = HumanHexAgentV2(env)                   
-        mcts = MCTSAgent.from_config(env, config).learn()
-        #mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"], episode=0)
+        #mcts = MCTSAgent.from_config(env, config).learn()
+        #mcts_ckpt = MCTSAgent.from_checkpoint(env, config["export_dir"], episode=100)
 
         # Custom
         if False:
             ...
 
-        # Deliverable 1
+        # Training agent from configuration file
         if False:
-            ...
-
+            agent_1 = MCTSAgent.from_config(env, config).learn()
+            agent_2 = HumanHexAgentV2(env)
+            EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
 
         # Deliverable 2
         if False:
@@ -61,7 +62,7 @@ def main():
         #     EnvironmentLoop(env, agent_1, agent_2, framerate=20).train_agents().play_game()
         # if False:
         #     Tournament(env, [agent_1, agent_2], num_series=10).play_tournament()
-        if False:
+        if True:
             agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
             Tournament(env, agents, **config["topp_params"]).play_tournament()
 
