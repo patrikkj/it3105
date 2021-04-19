@@ -5,11 +5,11 @@ hex_params:
   board_size: 6         # The size (k) of the k x k Hex board, where 3 ≤ k ≤ 10.
 
 buffer_params:
-  buffer_size: 2048   # Maximum number of cached games in the replay buffer
+  buffer_size: 100000   # Maximum number of cached games in the replay buffer
 
 learner_params:
-  n_episodes: 300                    # Number of actual games 
-  n_simulations: 200                 # Number of simulation games per actual move
+  n_episodes: 1000                    # Number of actual games 
+  n_simulations: 1200                 # Number of simulation games per actual move
   n_simulations_decay: 1            # Rate for adaptive number of rollouts by episode
   n_simulations_step_decay: 0.95       # Rate for adaptive number of rollouts by search depth
   save_interval: 20                 # Interval between generation of checkpoints
@@ -20,7 +20,7 @@ learner_params:
 
 network_params:
   alpha: 0.01           # Learning rate
-  alpha_decay: 0.995     # Learning rate decay (per episode)
+  alpha_decay: 0.996     # Learning rate decay (per episode)
   layer_dims:           # Num. of hidden layers
     - 256
     - 128

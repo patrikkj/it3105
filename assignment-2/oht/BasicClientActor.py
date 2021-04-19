@@ -1,11 +1,23 @@
 import math
-from BasicClientActorAbs import BasicClientActorAbs
+
+import numpy as np
+from envs.hex.renderer import HexRenderer
+from .BasicClientActorAbs import BasicClientActorAbs
+
 
 class BasicClientActor(BasicClientActorAbs):
 
-    def __init__(self, IP_address=None, verbose=True):
+    def __init__(self, agent_factory, IP_address=None, verbose=True):
+        self.agent_factory = agent_factory
+        self._agent = None
+        self._prev_board = None
         self.series_id = -1
         BasicClientActorAbs.__init__(self, IP_address, verbose=verbose)
+
+    def _plot(self, framerate=30):
+        HexRenderer.render(
+            np.array(self._prev_board, dtype=int).reshape(6, 6),
+            block=False, pause=1/framerate, close=False)
 
     def handle_get_action(self, state):
         """
@@ -17,18 +29,27 @@ class BasicClientActor(BasicClientActorAbs):
         then you will see a 2 here throughout the entire series, whereas player 1 will see a 1.
         :return: Your actor's selected action as a tuple (row, column)
         """
+        pid, *board = state
+        
+        # Identify which action has been played since our last move (thanks keith for not providing this)
+        diff = tuple(a - b for a, b in zip(board, self._prev_board))
+        if any(diff):
+            # Deduce AI action
+            ai_action, ai_pid = next((i, v) for i, v in enumerate(diff) if v != 0)
 
-        # This is an example player who picks random moves. REMOVE THIS WHEN YOU ADD YOUR OWN CODE !!
-        next_move = tuple(self.pick_random_free_cell(
-            state, size=int(math.sqrt(len(state)-1))))
-        #############################
-        #
-        #
-        # YOUR CODE HERE
-        #
-        # next_move = ???
-        ##############################
-        return next_move
+            # Apply action to env and cached board
+            self._prev_board[ai_action] = ai_pid
+            self._plot()
+            self._agent.env.move(action=ai_action, player=ai_pid)
+        
+        # Determine next action
+        action = self._agent.get_action(state)
+
+        # Apply action to env and cached board
+        self._prev_board[action] = pid
+        self._plot()
+        self._agent.env.move(action=action, player=pid)
+        return (action // 6, action % 6)
 
     def handle_series_start(self, unique_id, series_id, player_map, num_games, game_params):
         """
@@ -56,6 +77,18 @@ class BasicClientActor(BasicClientActorAbs):
         :return
         """
         self.starting_player = start_player
+        # The network is only trained to recommend actions from states 
+        # emerging from games where 1 is the starting player.
+
+        # If 2 is the starting player, we transform to an equivalent (but transposed)
+        # game where 1 is the starting player, swapping player ID's for 1 and 2.
+        
+        # As a consequence, all actions played in a transformed game must be transformed
+        # back to the original representation
+        
+        
+        self._agent = self.agent_factory(start_player)
+        self._prev_board = [0 for _ in range(6**2)]
         #############################
         #
         #

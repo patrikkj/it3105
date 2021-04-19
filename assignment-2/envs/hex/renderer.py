@@ -84,7 +84,7 @@ class HexRenderer:
         ])
         tri_coords = tri_coords @ HexRenderer._transform_matrix()
         t, b, l, r, c = tri_coords
-        triangles = [((t, l, c), 1), ((r, b, c), 1), ((l, b, c), 2), ((r, t, c), 2)]
+        triangles = [((t, l, c), 2), ((r, b, c), 2), ((l, b, c), 1), ((r, t, c), 1)]
 
         for tri_coords, player in triangles:
             triangle = Polygon(tri_coords, facecolor=HexRenderer.tri_colors[player], edgecolor=HexRenderer.edge_color, zorder=0)
