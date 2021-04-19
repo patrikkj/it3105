@@ -1,13 +1,16 @@
+import os
+
 import numpy as np
 import tensorflow as tf
 import yaml
-import os
+
 #sys.path.append("/Users/patrikkj/git/patrikkj/it3105/")
 os.chdir("/Users/patrikkj/git/patrikkj/it3105")
 from agents import (HumanHexAgent, HumanHexAgentV2, MCTSAgent, NaiveMCTSAgent,
                     RandomAgent)
 from environment_loop import EnvironmentLoop
 from envs.hex import HexEnvironment
+from oht.BasicClientActor import BasicClientActor
 from tournament import Tournament
 from utils import debug
 
@@ -22,7 +25,7 @@ with open("./assignment-2/config.yml") as f:
 # with open("./assignment-2/config_topp.yml") as f:
 #    config = yaml.load(f, Loader=yaml.FullLoader)
 
-@debug
+#@debug
 def main():
 
     ############################
@@ -37,16 +40,16 @@ def main():
             EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
     
     # Test a few pivotal parameters
-    if True:
+    if False:
         with HexEnvironment(**config["hex_params"]) as env:
-            agent_1 = MCTSAgent.from_checkpoint(
+            agent_2 = MCTSAgent.from_checkpoint(
                 env, 
                 config["export_dir"], 
-                name="candidate_oht", 
-                episode=420).learn(episodes=20)
+                name="mctsagent__2021_04_18__17_08_30", 
+                episode=1000)
             
             #agent_1 = MCTSAgent.from_config(env, config).learn()
-            agent_2 = HumanHexAgentV2(env)
+            agent_1 = HumanHexAgentV2(env)
             while input() != "quit":
                 EnvironmentLoop(env, agent_1, agent_2, framerate=10).play_game()
 
@@ -61,6 +64,19 @@ def main():
             agents = MCTSAgent.from_agent_directory(env=env, export_dir=config["export_dir"])
             Tournament(env, agents, **config["topp_params"]).play_tournament()
     
-
+    # Run the OHT
+    if True:
+        def agent_factory(starting_player):
+            env = HexEnvironment(starting_player=starting_player, **config["hex_params"])
+            agent = MCTSAgent.from_checkpoint(
+                    env, 
+                    config["export_dir"], 
+                    name="oht_v2_1000", 
+                    episode=1000)
+            #agent = NaiveMCTSAgent(env, n_simulations=30_000)
+            return agent
+        bsa = BasicClientActor(agent_factory, verbose=True)
+        bsa.connect_to_server()
+    
 if __name__ == "__main__":
     main()

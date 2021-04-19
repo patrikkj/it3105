@@ -1,0 +1,11 @@
+{
+    "n_episodes": 1000,
+    "n_simulations": 300,
+    "n_simulations_decay": 1,
+    "n_simulations_step_decay": 0.95,
+    "save_interval": 20,
+    "batch_size": 256,
+    "epsilon": 2,
+    "epsilon_decay": 0.99,
+    "uct_coeff": 1.4
+}

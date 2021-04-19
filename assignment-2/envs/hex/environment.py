@@ -10,14 +10,14 @@ class HexEnvironment(StateManager):
     REWARD_WIN = 1
     REWARD_ACTION = 0
     REWARD_LOSS = -1
-    STARTING_PLAYER = 1
 
-    def __init__(self, board_size=6):
+    def __init__(self, board_size=6, starting_player=1):
         super().__init__(spec=EnvironmentSpec(
             observations=board_size**2 + 1,    # Board + PID
             actions=board_size**2
         ))
         self.board_size = board_size
+        self.starting_player = starting_player
         self.reset()    # Initialize environment state (all initialization is done in self.reset())
 
     def _validate_move(self, action, player):
@@ -58,7 +58,7 @@ class HexEnvironment(StateManager):
     def get_initial_observation(self):
         """Returns the agents' perceivable state of the initial environment."""
         init_board = np.zeros((self.board_size, self.board_size), dtype=int).flatten()
-        return (HexEnvironment.STARTING_PLAYER, *init_board)
+        return (self.starting_player, *init_board)
 
     def get_observation(self):
         """Returns the agents' perceivable state of the environment."""
@@ -74,7 +74,7 @@ class HexEnvironment(StateManager):
         """Resets the environment."""
         self.board = np.zeros((self.board_size, self.board_size), dtype=int)
         self.hexgrid = HexGrid(self.board_size)
-        self._current_player = 1
+        self._current_player = self.starting_player
         self._winning_player = -1
         self._actions = set(range(self.board.size))
         self._is_terminal = False
@@ -87,6 +87,7 @@ class HexEnvironment(StateManager):
         obj.board_size = self.board_size
         obj.board = self.board.copy()
         obj.hexgrid = self.hexgrid.copy()
+        obj.starting_player = self.starting_player
         obj._current_player = self._current_player
         obj._winning_player = self._winning_player
         obj._actions = self._actions.copy()

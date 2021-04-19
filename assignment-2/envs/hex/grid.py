@@ -48,11 +48,11 @@ class HexGrid:
     def move(self, x, y, player):
         # Determine new cell flag
         if player == 1:
-            flags = HexFlag.P1_UPPER if y == 0 else \
-                    HexFlag.P1_LOWER if y == self.board_size - 1 else HexFlag.ISOLATED
+            flags = HexFlag.P1_UPPER if x == 0 else \
+                    HexFlag.P1_LOWER if x == self.board_size - 1 else HexFlag.ISOLATED
         else:
-            flags = HexFlag.P2_LOWER if x == 0 else \
-                    HexFlag.P2_UPPER if x == self.board_size - 1 else HexFlag.ISOLATED
+            flags = HexFlag.P2_LOWER if y == 0 else \
+                    HexFlag.P2_UPPER if y == self.board_size - 1 else HexFlag.ISOLATED
         
         # Create new disjoint set node
         _id = x * self.board_size + y

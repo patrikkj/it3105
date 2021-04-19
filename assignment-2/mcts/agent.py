@@ -1,7 +1,7 @@
 import os
 import pickle
 from datetime import datetime
-
+from utils import timeit
 from base import Agent, LearningAgent
 from network import ActorNetwork
 from replay import ReplayBuffer
@@ -99,6 +99,7 @@ class NaiveMCTSAgent(Agent):
         self.tree_policy = tree_policy
         self.target_policy = random_policy
 
+    @timeit
     def get_action(self, state):
         """Ask the tree policy for the probability distribution over actions."""
         # Does one iteration of learning.
