@@ -131,7 +131,7 @@ class CriticNetwork(Critic):
     def _build_model(self):
         """Builds the Keras mudel used as a state-value approximator."""
         model = tf.keras.Sequential()
-        input_spec = self.env.decode_state(self.env.get_observation()).size
+        input_spec = len(self.env.decode_state(*self.env.get_observation()))
         model.add(tf.keras.layers.Input(shape=(input_spec, )))
         for units in self.layer_dims:
             model.add(tf.keras.layers.Dense(units, activation="relu"))
