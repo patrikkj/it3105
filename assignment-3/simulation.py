@@ -5,7 +5,7 @@ import random
 
 def run_simulation(n_timesteps):
     #mc = MountainCar([-1.2,0.6], [-0.07, 0.07], n_timesteps)
-    ani = AnimateMC()
+    #ani = AnimateMC()
     #print("Initial random x: ", mc.x)
     """
 

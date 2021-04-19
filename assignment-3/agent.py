@@ -28,6 +28,8 @@ class ActorCriticAgent:
 
     def run(self, num_episodes, training=True):
         for i in range(num_episodes):
+            print("Episode:", i)       
+
             # Callbacks for episode start
             for callback in self.on_episode_begin:
                 callback(self, self._episode)
@@ -47,7 +49,7 @@ class ActorCriticAgent:
     def evaluate(self, num_episodes):
         return self.run(num_episodes, training=False)
         
-    def episode(self, training=True):        
+    def episode(self, training=True): 
         # Reset eilgibilities for actor and critic
         self.actor.reset_eligibility()
         self.critic.reset_eligibility()
@@ -57,7 +59,7 @@ class ActorCriticAgent:
         self.env.reset()
         obs = self.env.get_observation()
         state = self.env.decode_state(*obs)
-        action, is_exploring = self.actor(state, training=training)
+        action, is_exploring = self.actor(state, self.env.get_legal_actions(), training=training)
         sap = SAP(state, action)
 
         self._step = 1
@@ -67,7 +69,7 @@ class ActorCriticAgent:
             state = self.env.decode_state(*obs)
             # Evaluate state and action using actor and critic
             if not is_terminal:
-                action, is_exploring = self.actor(state, training=training)
+                action, is_exploring = self.actor(state, self.env.get_legal_actions(), training=training)
             error = self.critic.td_error(reward, sap.state, state)
 
             # Update weights & eligibilities

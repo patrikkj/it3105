@@ -18,7 +18,7 @@ config = {
     "environment_params":{
         "x_range":[-1.2,0.6], 
         "v_range": [-0.07,0.07],
-        "max_steps":1000
+        "max_steps":100
     },
 
     "tiling_params":{
@@ -26,7 +26,7 @@ config = {
         "n_tilings": 5,
         "displacement_vector":[1,3]
     },
-    "n_episodes": 10,
+    "n_episodes": 1,
     "reset_on_explore": True,
 
     "visualize_episodes": [-1],
@@ -35,8 +35,8 @@ config = {
     "critic_type": Critic.NETWORK,
 
     "critic_params": {
-        "layer_dims": (10, 15, 5, 1),   # Ignored if not using Network critc
-        "alpha": 0.3,                   # 1e-2 for Network, 0.3 for table
+        "layer_dims": (),   # Ignored if not using Network critc
+        "alpha": 0.01,                   # 1e-2 for Network, 0.3 for table
         "decay_rate": 0.9,
         "discount_rate": 0.99,
     },
@@ -83,7 +83,7 @@ def main():
     critic = Critic.from_type(
         critic_type, env, **critic_params, reset_on_explore=reset_on_explore
     )
-    actor = Actor(env, **actor_params, reset_on_explore=reset_on_explore)
+    actor = Actor(**actor_params, reset_on_explore=reset_on_explore)
     agent = ActorCriticAgent(env, actor, critic)
     agent.set_callbacks(
         on_episode_begin=[logger.step_logger],
@@ -96,15 +96,16 @@ def main():
     agent.fit(n_episodes)
 
     # Evaluate
-    print(f"\n{'Evaluation':^100}\n" + "="*100)
-    agent.evaluate(50)
+    #print(f"\n{'Evaluation':^100}\n" + "="*100)
+    #agent.evaluate(10)
 
     # Collect logs
     df_episodes = pd.DataFrame(logger.episode_logs)
     df_steps = pd.DataFrame(logger.step_logs)
     
     # Visualize
-    animation = AnimateMC()
+    env.reset()
+    animation = AnimateMC(actor,env,100000)#, environment_params["x_range"], environment_params["max_steps"])
     
 
 main()  

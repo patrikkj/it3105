@@ -123,8 +123,7 @@ class CriticNetwork(Critic):
 
     def __call__(self, state):
         """Returns the critics' evaluation of a given state."""
-        decoded = self.env.decode_state(state)
-        tensor = tf.convert_to_tensor(decoded)
+        tensor = tf.convert_to_tensor(state)
         reshaped = tf.reshape(tensor, shape=(1, -1))
         return self.model(reshaped)
 
@@ -135,6 +134,7 @@ class CriticNetwork(Critic):
         model.add(tf.keras.layers.Input(shape=(input_spec, )))
         for units in self.layer_dims:
             model.add(tf.keras.layers.Dense(units, activation="relu"))
+        model.add(tf.keras.layers.Dense(1,activation="relu"))    
         optimizer = tf.keras.optimizers.SGD(learning_rate=self.alpha)
         model.compile(optimizer=optimizer, loss="mse")
         return model

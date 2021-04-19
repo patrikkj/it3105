@@ -4,15 +4,15 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Ellipse
 from mountain_car_env import MountainCar
-from tiling import Tiling
 
 class AnimateMC():
-    def __init__(self,x_range = [-1.2,0.6], n_steps=1000):
-        
-        self.tiling = Tiling()
+    def __init__(self, actor, env, n_steps=1000, x_range=[-1.2,0.6]):
+        print("\n \n\n\n")
+        print("-------------------------- ENTER ANIMATE -------------------------------------")
         self.n_steps = n_steps
-        self.mc = MountainCar()
-        
+        print(n_steps)
+        self.mc = env
+        self.actor = actor
         self.d = (x_range[1]-x_range[0])/100
         self.x_line = np.arange(x_range[0], x_range[1], self.d)
         self.y_line = [self.get_y(x) for x in self.x_line]
@@ -45,23 +45,39 @@ class AnimateMC():
         self.ax.add_artist(self.car)
         self.car.set_clip_box(self.ax.bbox)
         self.car.set_facecolor([0.85275809, 0.37355041, 0.32941859])
-        self.ani = FuncAnimation(self.fig, self.animate, frames = self.n_steps, interval = 16, blit=False, init_func=self.init)
+        print(f"Initial animation:l x: {self.mc.x}, v: {self.mc.v}")
+        self.ani = FuncAnimation(self.fig, self.animate, frames = 1, interval = 16, blit=False, init_func=self.init)
         plt.show()
 
+    # Function that will be called to update each frame in animation
     def animate(self, i):
+        print(f"ANIMATION step: {self.mc.step}, x: {self.mc.x}, v: {self.mc.v}")
         if self.mc.is_finished():
+            print("Entered finished")
             self.complete_text = self.ax.text(0.02, 0.9, 'Finished!', transform=self.ax.transAxes, color='Green')
             return
         if self.mc.is_timeout():
+            print("Entered timeout")
+
             self.timeout_text = self.ax.text(0.02, 0.95, 'Timestep = %.1i' % self.mc.step, transform=self.ax.transAxes, color='red')
             self.step_text.set_text("")
             return 
         
-        self.state = self.mc.encode_state(self.mc.x, self.mc.v)
         # ADD action (get from actor)
-        self.mc.apply_action(self.mc.naive_action())
+        state = self.mc.decode_state(*self.mc.get_observation())
+        action = self.actor(state, self.mc.get_legal_actions(), training=False)[0]
+        print("-------------------------------")
+        print("ACTOR suggested action:", action)
+        print("-------------------------------")
+        
+        
+        action = self.mc.random_action()
+        
+        
+        
+        self.mc.apply_action(action)
         self.car.angle = self.find_angle(self.mc.x)
-        print("Angle: ", self.car.angle)
+        #print("Angle: ", self.car.angle)
         self.car.set_center((self.mc.x, self.get_y(self.mc.x)))
         self.step_text.set_text('Timestep = %.1i' % self.mc.step)
         self.update_action_text()
