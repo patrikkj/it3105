@@ -12,6 +12,7 @@ class AnimateMC():
         self.n_steps = n_steps
         print(n_steps)
         self.mc = env
+        self.mc.max_steps = self.n_steps
         self.actor = actor
         self.d = (x_range[1]-x_range[0])/100
         self.x_line = np.arange(x_range[0], x_range[1], self.d)
