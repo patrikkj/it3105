@@ -47,8 +47,9 @@ class ActorCriticAgent:
                 callback(self, self._episode, final=final)
             self._episode_results[i]["best_x"] = (self.env.best_step, self.env.best_x)
             self._episode += 1
-        #self.show_best_x()
         self.show_heatmap()
+        self.show_best_x()
+
     def fit(self, num_episodes):
         return self.run(num_episodes)
 
