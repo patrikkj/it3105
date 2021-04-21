@@ -8,14 +8,13 @@ import matplotlib.image as mpimg
 from mountain_car_env import MountainCar
 from matplotlib.artist import Artist
 from matplotlib import transforms
-#import imutils
 
 
 
-class AnimateMC():
+class AnimateMC2():
     def __init__(self, actor, env, n_steps=1000, x_range=[-1.2,0.6]):
         print("\n \n\n\n")
-        print("-------------------------- ENTER ANIMATE -------------------------------------")
+        print("-------------------------- ENTER ANIMATE 2-------------------------------------")
         self.n_steps = n_steps
         print(n_steps)
         self.mc = env
@@ -25,14 +24,55 @@ class AnimateMC():
         self.x_line = np.arange(x_range[0], x_range[1], self.d)
         self.y_line = [self.get_y(x) for x in self.x_line]
         self.padding = 0.5
-        self.best_x = 0
-        self.best_step = 0
         self.figure_offset = 0.1
         #self.fig, self.ax = plt.subplots()
         self.fig = plt.figure(figsize=(15,10))
         self.ax = self.fig.add_subplot(111, aspect='auto', autoscale_on=False,
                                      xlim=(x_range[0]-self.padding, x_range[1]+self.padding), ylim=(-2, 2))
 
+        
+        
+        
+        
+        pygame.init()
+        screen = pygame.display.set_mode([400, 400])
+        pygame.display.set_caption('Rotating image example')
+        clock = pygame.time.Clock()
+
+        img = pygame.image.load('assignment-3/mountain_car_img.png').convert()
+
+        img_rect = img.get_rect(center = screen.get_rect().center)
+        degree = 0
+
+        while degree < 360:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    done = True
+
+            # rotate image
+            rot_img = pygame.transform.rotate(img, degree)
+            img_rect = rot_img.get_rect(center = img_rect.center)
+
+            # copy image to screen
+            screen.fill((0, 0, 0))
+            screen.blit(rot_img, img_rect)
+            pygame.display.flip()
+
+            clock.tick(60)
+            degree += 1
+
+        pygame.quit()
+        
+        
+        
+        
+        
+        return
+        
+        
+        
+        
+        
         print("LIST",list(np.arange(x_range[0]-self.padding, x_range[1]+self.padding, 0.25)))
         #plt.xticks = np.arange(x_range[0]-self.padding, x_range[1]+self.padding, 0.25)
         #self.ax.set_xlim(x_range[0],x_range[1])
@@ -108,7 +148,7 @@ class AnimateMC():
         self.car.set_center(self.offset_figure(self.mc.x, angle))
         trans = transforms.Affine2D().rotate(angle).translate(*self.offset_figure(self.mc.x,angle))
         #self.ab.set_transform(trans)
-
+        
         self.ab.xybox = self.offset_figure(self.mc.x,angle)
         # self.ab.set_center((0.5,0.5))
         #self.ab.update_positions((0.5,0.5))
@@ -118,8 +158,6 @@ class AnimateMC():
         self.update_action_text()
 
         return 
-    
-
 
     """
     def rotate_bound(self,image, angle):
@@ -144,6 +182,8 @@ class AnimateMC():
         M[1, 2] += (nH / 2) - cY
         return cv2.warpAffine(image, M, (nW, nH), borderValue=(255,255,255))
     """
+
+
     def offset_figure(self, x, angle):
         angle = angle/360 * 2 * math.pi + math.pi/2
         print(f"Angle: {angle}")

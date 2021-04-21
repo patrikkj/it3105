@@ -7,6 +7,10 @@ from critic import Critic
 from utils import Cases
 from mountain_car_env import MountainCar
 from animate import AnimateMC
+#from animate_copy import AnimateMC2
+import os
+from utils import debug
+
 
 """
 # Config IO handling
@@ -18,15 +22,15 @@ config = {
     "environment_params":{
         "x_range":[-1.2,0.6], 
         "v_range": [-0.07,0.07],
-        "max_steps":100
+        "max_steps":200
     },
 
     "tiling_params":{
-        "n_tiles": 4,
-        "n_tilings": 5,
-        "displacement_vector":[1,3]
+        "n_tiles": 8,
+        "n_tilings": 8,
+        "displacement_vector":[1,2]
     },
-    "n_episodes": 1,
+    "n_episodes": 10,
     "reset_on_explore": True,
 
     "visualize_episodes": [-1],
@@ -37,19 +41,19 @@ config = {
     "critic_params": {
         "layer_dims": (),   # Ignored if not using Network critc
         "alpha": 0.01,                   # 1e-2 for Network, 0.3 for table
-        "decay_rate": 0.9,
+        "decay_rate": 0.5,
         "discount_rate": 0.99,
     },
     "actor_params": {
-        "alpha": 0.15,
-        "decay_rate": 0.9,
+        "alpha": 0.1,
+        "decay_rate": 0.95,
         "discount_rate": 0.99,
-        "epsilon": 0.5,
-        "epsilon_min": 0.03,
+        "epsilon": 1,
+        "epsilon_min": 0.01,
         "epsilon_decay": 0.99
     }
 
-}  
+    }  
 """
 # Read/write configuration file
 if mode == "read":
@@ -57,6 +61,8 @@ if mode == "read":
 elif mode == "write":
     utils.write_config(config, case)
 """
+
+#@debug
 def main():
 
     # Unpack configuration
@@ -102,10 +108,11 @@ def main():
     # Collect logs
     df_episodes = pd.DataFrame(logger.episode_logs)
     df_steps = pd.DataFrame(logger.step_logs)
-    
+    return
+    #os.system('say "Done learning. Let\'s see how this goes!"')
     # Visualize
-    env.reset()
-    animation = AnimateMC(actor,env,100000)#, environment_params["x_range"], environment_params["max_steps"])
+    #env.reset()
+    #animation = AnimateMC(actor,env,10_000)#, environment_params["x_range"], environment_params["max_steps"])
     
 
 main()  

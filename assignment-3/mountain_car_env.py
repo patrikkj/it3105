@@ -12,10 +12,12 @@ class MountainCar():
         self.v_range = v_range
         self.x = self.initial_x()
         self.v = 0
+        self.best_x = -10
+        self.best_step = 0
         self.max_steps = max_steps
         self.step = 0
         self.last_action = 0
-        
+        self.figure_offset = [0,0]
 
     def apply_action(self, action):
         #print("----------------------------------------------------------")
@@ -30,6 +32,7 @@ class MountainCar():
         if self.is_completed: 
             reward = MountainCar.REWARD_WIN
         #print("Step: ", self.step, "  of " , self.max_steps)
+        self.check_best()
         return self.get_observation(), reward, self.is_finished()
 
     def get_observation(self):
@@ -81,11 +84,17 @@ class MountainCar():
         self.v = 0
         self.step = 0
         self.last_action = 0
+        self.best_x = -10
+        self.best_step = 0
     
     def get_legal_actions(self):
         return self.actions
 
-
+    def check_best(self):
+        if self.x > self.best_x:
+            self.best_x = self.x
+            self.best_step = self.step
+        return
 
     #--------- Tiling methods -------------
 

@@ -45,11 +45,11 @@ class Actor:
         self._current_epsilon = max(self.epsilon * self.epsilon_decay ** self.episode, self.epsilon_min)
         if (np.random.random() < self._current_epsilon) and training:
             action = legal_actions[np.random.choice(len(legal_actions))]
-            return action, True
+            return action, True , 0
         else:
             #action = np.random.choice(saps, weights=[self.policy[sap] for sap in saps]).action
-            action = max(saps, key=lambda sap: self.policy.get(sap, 0)).action
-            return action, False
+            sap2 = max(saps, key=lambda sap: self.policy.get(sap, 0))
+            return sap2.action, False, self.policy.get(sap2, 0)
 
     def set_episode(self, episode):
         self.episode = episode

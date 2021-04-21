@@ -123,6 +123,18 @@ class CriticNetwork(Critic):
 
     def __call__(self, state):
         """Returns the critics' evaluation of a given state."""
+        
+        #indices = np.asarray(state).nonzero()[0]
+        #weights = self.model.layers[0].get_weights()[0]
+        #weights = np.asarray([weight for sublist in weights for weight in sublist])
+        #test =tf.convert_to_tensor(np.sum(weights[list(indices)]))
+        #print(tf.reshape(test, shape=(1, -1)))
+        return tf.reshape(test, shape=(1, -1))
+        
+        
+        #return tf.convert_to_tensor(np.sum(weights[list(indices)]))
+        
+        
         tensor = tf.convert_to_tensor(state)
         reshaped = tf.reshape(tensor, shape=(1, -1))
         return self.model(reshaped)
@@ -146,6 +158,9 @@ class CriticNetwork(Critic):
         # Wraps tf.ops to record operations such that gradients can be calculated
         with tf.GradientTape() as tape:
             value = self(state)
+            #TESTING
+            print("-----------------------------------------")
+            print(value)
         gradients = tape.gradient(value, self.model.trainable_weights)
 
         # Applies the eligibility update rule for Semi-Gradient Descent with TD.

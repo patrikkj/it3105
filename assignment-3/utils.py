@@ -2,6 +2,18 @@ import json
 from enum import Enum
 from typing import NamedTuple
 import numpy as np
+from functools import wraps
+import cProfile
+
+
+def debug(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with cProfile.Profile() as pr:
+            out = func(*args, **kwargs)
+        pr.print_stats(sort=1)
+        return out
+    return wrapper
 
 
 class SAP(NamedTuple):

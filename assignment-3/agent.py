@@ -1,6 +1,9 @@
 from utils import SAP
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 
 class ActorCriticAgent:
@@ -12,7 +15,7 @@ class ActorCriticAgent:
         self.on_episode_begin = []  # Format: (agent, episode) -> ...
         self.on_episode_end = []    # Format: (agent, episode) -> ...
         self.on_step_end = []       # Format: (agent, episode, step,) -> ...
-
+        self._episode_results = []
         # Internal variables for book-keeping
         self._episode = 1
         self._step = 1
@@ -27,6 +30,7 @@ class ActorCriticAgent:
             self.on_step_end = on_step_end
 
     def run(self, num_episodes, training=True):
+        self._episode_results = [{} for i in range(num_episodes)]
         for i in range(num_episodes):
             print("Episode:", i)       
 
@@ -41,8 +45,10 @@ class ActorCriticAgent:
             final = i == (num_episodes - 1)
             for callback in self.on_episode_end:
                 callback(self, self._episode, final=final)
+            self._episode_results[i]["best_x"] = (self.env.best_step, self.env.best_x)
             self._episode += 1
-
+        #self.show_best_x()
+        self.show_heatmap()
     def fit(self, num_episodes):
         return self.run(num_episodes)
 
@@ -59,7 +65,7 @@ class ActorCriticAgent:
         self.env.reset()
         obs = self.env.get_observation()
         state = self.env.decode_state(*obs)
-        action, is_exploring = self.actor(state, self.env.get_legal_actions(), training=training)
+        action, is_exploring, state_val = self.actor(state, self.env.get_legal_actions(), training=training)
         sap = SAP(state, action)
 
         self._step = 1
@@ -69,7 +75,7 @@ class ActorCriticAgent:
             state = self.env.decode_state(*obs)
             # Evaluate state and action using actor and critic
             if not is_terminal:
-                action, is_exploring = self.actor(state, self.env.get_legal_actions(), training=training)
+                action, is_exploring, state_val = self.actor(state, self.env.get_legal_actions(), training=training)
             error = self.critic.td_error(reward, sap.state, state)
 
             # Update weights & eligibilities
@@ -87,3 +93,46 @@ class ActorCriticAgent:
         # Used for logging
         self._training = training
 
+    def show_best_x(self):
+        plt.plot([ep["best_x"][1] for ep in self._episode_results])
+        plt.show()
+        return
+
+    def show_heatmap(self):
+        d = 100
+        num_axis_ticks= 4
+        heatmap_data = []
+        x_vals = np.linspace(*self.env.x_range,d)
+        v_vals = np.linspace(self.env.v_range[1],self.env.v_range[0],d)
+        for v in v_vals:
+            row = []
+            for x in x_vals:
+                state = self.env.decode_state(x,v)
+                action, is_finished, state_val = self.actor(state, [-1,0,1], training=False)
+                if not (isinstance(state_val, float) or isinstance(state_val, int)):
+                    state_val = float(state_val.numpy()[0][0])
+                    #print(type(state_val),state_val)
+                row.append(state_val)
+            heatmap_data.append(row)
+        sns.set_theme()
+        #x_vals = [x for i,x in enumerate(x_vals) if i%10 == 0]
+        x_axis = []
+        y_axis = []
+        rounding = 2
+        for i in range(len(x_vals)):
+            if (i+1) % (d/num_axis_ticks)==0:
+                x_val = round(x_vals[i],rounding)
+                y_val = round(v_vals[i],rounding)
+            elif i ==0:
+                x_val = round(x_vals[i],rounding)
+                y_val = round(v_vals[i],rounding)
+            else:
+                x_val = None
+                y_val = None
+            x_axis.append(x_val)
+            y_axis.append(y_val)
+        print("X vals", x_vals)
+        ax = sns.heatmap(heatmap_data, xticklabels=x_axis, yticklabels=y_axis)
+        plt.show()
+
+        
