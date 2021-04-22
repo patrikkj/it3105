@@ -108,6 +108,12 @@ class ActorCriticAgent:
         for v in v_vals:
             row = []
             for x in x_vals:
+                #print("Heatmap x,v:", x,v,)                
+                #TESTING
+                if x == 0.16363636363636358:
+                    print("yiha")
+
+
                 state = self.env.decode_state(x,v)
                 action, is_finished, state_val = self.actor(state, [-1,0,1], training=False)
                 if not (isinstance(state_val, float) or isinstance(state_val, int)):

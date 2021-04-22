@@ -22,33 +22,33 @@ config = {
     "environment_params":{
         "x_range":[-1.2,0.6], 
         "v_range": [-0.07,0.07],
-        "max_steps":200
+        "max_steps":1000
     },
 
     "tiling_params":{
-        "n_tiles": 8,
+        "n_tiles": [8,8],
         "n_tilings": 8,
         "displacement_vector":[1,2]
     },
-    "n_episodes": 10,
+    "n_episodes": 200,
     "reset_on_explore": True,
 
     "visualize_episodes": [-1],
-    "delay" : 0.2,
+    "delay" : 0.1,
 
     "critic_type": Critic.NETWORK,
 
     "critic_params": {
-        "layer_dims": (),   # Ignored if not using Network critc
+        "layer_dims": (),                # Ignored if not using Network critc
         "alpha": 0.01,                   # 1e-2 for Network, 0.3 for table
-        "decay_rate": 0.5,
+        "decay_rate": 0.99,
         "discount_rate": 0.99,
     },
     "actor_params": {
         "alpha": 0.1,
-        "decay_rate": 0.95,
+        "decay_rate": 0.99,
         "discount_rate": 0.99,
-        "epsilon": 1,
+        "epsilon": 0,
         "epsilon_min": 0.01,
         "epsilon_decay": 0.99
     }
@@ -79,9 +79,12 @@ def main():
     critic_params = config["critic_params"]
     actor_params = config["actor_params"]
 
+    # TESTING
+    actor_params["alpha"] = 1 / tiling_params["n_tilings"]
+
     # Run experiment
     env = MountainCar(**environment_params)
-    env.init_tilings(environment_params["x_range"], environment_params["v_range"],**tiling_params)
+    env.init_tilings(**tiling_params)
     # Print configs
     print("Max steps before timeout: ", environment_params["max_steps"])
 
@@ -108,11 +111,11 @@ def main():
     # Collect logs
     df_episodes = pd.DataFrame(logger.episode_logs)
     df_steps = pd.DataFrame(logger.step_logs)
-    return
+    #return
     #os.system('say "Done learning. Let\'s see how this goes!"')
     # Visualize
-    #env.reset()
-    #animation = AnimateMC(actor,env,10_000)#, environment_params["x_range"], environment_params["max_steps"])
+    env.reset()
+    animation = AnimateMC(actor,env,10_000)#, environment_params["x_range"], environment_params["max_steps"])
     
 
 main()  

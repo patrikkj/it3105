@@ -45,14 +45,15 @@ class AnimateMC():
 
 
 
-        
+        """
         self.car_img = mpimg.imread("assignment-3/mountain_car_img.png")
-        self.imagebox = OffsetImage(self.car_img, zoom=0.2)
+        self.imagebox = OffsetImage(self.car_img, zoom=0.05)
         self.ab = AnnotationBbox(self.imagebox, (0.0,0.0), frameon=False)
         print(dir(self.ab))
         self.ax.add_artist(self.ab)
         #self.imagebox.
 
+        """
 
 
 
@@ -69,12 +70,12 @@ class AnimateMC():
         self.idle_active = self.ax.text(0.47, 0.125, '0', transform=self.ax.transAxes, color = 'lime')
         self.idle_gray = self.ax.text(0.47, 0.125, '0', transform=self.ax.transAxes, color='darkgray')
         
-        self.car = Ellipse(xy=[0,0], width=0.2, height=0.1, angle=0)
+        self.car = Ellipse(xy=[0,0], width=0.1, height=0.05, angle=0)
         self.ax.add_artist(self.car)
         self.car.set_clip_box(self.ax.bbox)
         self.car.set_facecolor([0.85275809, 0.37355041, 0.32941859])
         print(f"Initial animation:l x: {self.mc.x}, v: {self.mc.v}")
-        self.ani = FuncAnimation(self.fig, self.animate, frames = 1, interval = 16, blit=False, init_func=self.init)
+        self.ani = FuncAnimation(self.fig, self.animate, frames = 1, interval = 6.25, blit=False, init_func=self.init)
         plt.show()
 
     # Function that will be called to update each frame in animation
@@ -109,7 +110,10 @@ class AnimateMC():
         trans = transforms.Affine2D().rotate(angle).translate(*self.offset_figure(self.mc.x,angle))
         #self.ab.set_transform(trans)
 
-        self.ab.xybox = self.offset_figure(self.mc.x,angle)
+        #self.ab.xybox = self.offset_figure(self.mc.x,angle)
+        
+        
+        
         # self.ab.set_center((0.5,0.5))
         #self.ab.update_positions((0.5,0.5))
         #self.ab.xy = self.offset_figure(self.mc.x, angle)

@@ -9,6 +9,7 @@ class MountainCar():
     def __init__(self, x_range=[-1.2,0.6], v_range= [-0.07,0.07], max_steps=1000):
         self.actions = [-1,0,1]
         self.x_range = x_range
+        print("INITINITIINIT x_range:", self.x_range)
         self.v_range = v_range
         self.x = self.initial_x()
         self.v = 0
@@ -24,12 +25,22 @@ class MountainCar():
         #print("ACTION:", action, "      (from mc.apply_action())")
         #print("----------------------------------------------------------")
 
-        self.v = self.next_v(self.x, self.v, action)
-        self.x = self.next_x(self.x, self.v)
+        self.next_v(action)
+        self.next_x()
         self.step +=1
         self.last_action = action
         reward = MountainCar.REWARD_ACTION
-        if self.is_completed: 
+        if self.is_completed(): 
+            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
+            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
+            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
+            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
+            print(f"(x,v): ({self.x},{self.v}, range: {self.x_range}")
+            print("\n\n\n\n\n\n\\n\n\n\n\n\n\n")
+            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
+            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
+            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
+            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
             reward = MountainCar.REWARD_WIN
         #print("Step: ", self.step, "  of " , self.max_steps)
         self.check_best()
@@ -38,19 +49,19 @@ class MountainCar():
     def get_observation(self):
         return (self.x, self.v)
 
-    def next_v(self, x, v, action):
-        next_v =  v + 0.001 * int(action) - 0.0025 * math.cos(3 * x)
+    def next_v(self, action):
+        next_v =  self.v + 0.001 * int(action) - 0.0025 * math.cos(3 * self.x)
         if next_v > 0:
-            return min(next_v, self.v_range[1])
+            self.v = min(next_v, self.v_range[1])
         else: 
-            return max(next_v, self.v_range[0])
+            self.v =  max(next_v, self.v_range[0])
 
-    def next_x(self, x, v):
-        next_x =  x + v
+    def next_x(self):
+        next_x =  self.x + self.v
         if next_x > 0 :
-            return min(next_x, self.x_range[1])
+            self.x = min(next_x, self.x_range[1])
         else: 
-            return max(next_x, self.x_range[0])
+            self.x = max(next_x, self.x_range[0])
 
     def is_finished(self):
         return self.is_timeout() or self.is_completed()
@@ -59,7 +70,7 @@ class MountainCar():
         return self.step >= self.max_steps
     
     def is_completed(self):
-        return self.x == self.x_range[1]
+        return self.x >= self.x_range[1]
     
     def visualize(self):
         #funcAnimation
@@ -84,7 +95,7 @@ class MountainCar():
         self.v = 0
         self.step = 0
         self.last_action = 0
-        self.best_x = -10
+        self.best_x = -1000
         self.best_step = 0
     
     def get_legal_actions(self):
@@ -99,7 +110,7 @@ class MountainCar():
     #--------- Tiling methods -------------
 
 
-    def init_tilings(self, x_range=[0,0], v_range=[0,0], n_tiles=0, n_tilings=0, displacement_vector=[0,0]):
+    def init_tilings(self, n_tiles=[0,0], n_tilings=0, displacement_vector=[0,0]):
         self.displacement_vector = displacement_vector
         self.n_tiles = n_tiles
         self.n_tilings = n_tilings
@@ -108,22 +119,19 @@ class MountainCar():
         # List of displacement vectors indexed by tiling number --> [(1,3), (2,6), (4,9) ...] (example for asymmetrical displacement (3,1))
         self.tiling_displacement = np.array([self.displacement_vector* i for i in range(self.n_tilings)])
         # List of tile widths in each dimension --> [0.3 , 0,25]
-        self.tile_width = np.array([(self.x_range[1]-self.x_range[0])/self.n_tiles , (self.v_range[1]-self.v_range[0])/self.n_tiles])
+        self.tile_width = np.array([(self.x_range[1]-self.x_range[0])/self.n_tiles[0] , (self.v_range[1]-self.v_range[0])/self.n_tiles[1]])
         # The offset between tilings --> [0.02, 0.045]
+        
+        #TESTING
+        #self.offset = self.tile_width / (self.n_tilings)
+
         self.offset = self.tile_width / (self.n_tilings-1)
         self.extra_tiles = np.array([math.ceil(self.offset[k] * self.tiling_displacement[len(self.tiling_displacement)-1][k] / self.tile_width[k]) for k in range(len(self.offset)) ]) 
         self.total_tiles = self.n_tiles + self.extra_tiles
-        print ("-----------------------------------------------------")
-        
-        print("v tile width: ", (self.v_range[1]-self.v_range[0])/self.n_tiles)
-        print("n_tiles: ", self.n_tiles)
-        print("Extra tiles needed: ", self.extra_tiles)
-        print ("total tiles: " , self.total_tiles)
-        print("n_tilings: ", self.n_tilings)
-        print("Tile width:" , self.tile_width)
-        print("Tiling displacement:" , self.tiling_displacement)
-        print("offset: ", self.offset)
-        print ("-----------------------------------------------------")
+        self.start_coord = np.array([self.x_range[0],self.v_range[0]]) - self.extra_tiles*self.tile_width
+        self.print_tiling_info()
+
+
 
     def decode_state(self, x, v):
         """
@@ -147,25 +155,61 @@ class MountainCar():
         #print(self.offset[0] * self.tiling_displacement[len(self.tiling_displacement)-1][0] / self.tile_width[0])
 
         #state = 0
-        n_features = np.product(self.total_tiles) * self.n_tilings
+        n_features = np.prod(self.total_tiles) * self.n_tilings
         state = np.zeros(n_features, dtype=int)
 
         for i in range(self.n_tilings):
-            # Finds the index of the tile in both dimensions
-            x_tile = (x   -    self.offset[0] * self.tiling_displacement[i][0]    -    self.x_range[0]   +    self.extra_tiles[0]  *   self.tile_width[0])     //    self.tile_width[0]
-            v_tile = (v   -    self.offset[1] * self.tiling_displacement[i][1]    -    self.v_range[0]   +    self.extra_tiles[1]   *   self.tile_width[1])      //    self.tile_width[1]
             
-            #x_tile = (x   -    self.offset[0] * self.tiling_displacement[i][0]    -    self.x_range[0]   +    self.extra_tiles[0]  *   self.tile_width[0])     //    self.tile_width[0]
-            #v_tile = (v   -    self.offset[1] * self.tiling_displacement[i][1]    -    self.v_range[0]   +    self.extra_tiles[1]   *   self.tile_width[1])      //    self.tile_width[1]
+            #TESTING
+            x_tile = (x     -    self.start_coord[0]   -    self.offset[0] * self.tiling_displacement[i][0])       //    self.tile_width[0]
+            v_tile = (v     -    self.start_coord[1]   -    self.offset[1] * self.tiling_displacement[i][1])       //    self.tile_width[1]
+            
+            
+            
+            
+            # Finds the index of the tile in both dimensions
+            #x_tile = (x     -    self.x_range[0]   -    self.offset[0] * self.tiling_displacement[i][0]     +    self.extra_tiles[0]  *   self.tile_width[0])     //    self.tile_width[0]
+            #v_tile = (v     -    self.v_range[0]   -    self.offset[1] * self.tiling_displacement[i][1]     +    self.extra_tiles[1]   *   self.tile_width[1])      //    self.tile_width[1]
+            
+            
+            #print(f"(x,v) = ({x},{v})       Tiling {i} , x_tile: {x_tile}  , v_tile: {v_tile}")
 
-            index = int(i * (self.total_tiles[0]*self.total_tiles[1]) + x_tile * self.total_tiles[0] + v_tile)
+
+            #TESTING
+            index = int(i * (self.total_tiles[0] * self.total_tiles[1]) + v_tile * self.total_tiles[0] + x_tile)
+
+
+
+
+            #index = int(i * (self.total_tiles[0] * self.total_tiles[1]) + x_tile * self.total_tiles[0] + v_tile)
+            #print("index: ", index)
+            if index > n_features:
+                self.print_tiling_info()
+                print(" #############")
+                print("x_tile: ", x_tile)
+                print("v_tile: ", v_tile)
+                print("index: ", index)
+                print(self.total_tiles)
             #print("INDEX" , index)
             state[index] = 1
 
-            """
-            # adds the correct bit (corresponding to the state of the tiling) to the state integer
-            state += 2 ** (i * self.n_tiles**2 + x_tile * self.n_tiles + v_tile)
-            """
             #print ("Tiling %s: (%s,%s)" % (i, x_tile, v_tile))
 
         return tuple(state)
+
+
+    def print_tiling_info(self):
+        print ("-----------------------------------------------------")
+        print("x tile width: ", (self.x_range[1]-self.x_range[0])/self.n_tiles[0])
+        print("v tile width: ", (self.v_range[1]-self.v_range[0])/self.n_tiles[1])
+        print("n_tiles: ", self.n_tiles)
+        print("Extra tiles needed: ", self.extra_tiles)
+        print ("total tiles: " , self.total_tiles)
+        print("n_tilings: ", self.n_tilings)
+        print("Start coord:", self.start_coord)
+        print("Tile width:" , self.tile_width)
+        print("Tiling displacement:" , self.tiling_displacement)
+        print("offset: ", self.offset)
+        print ("-----------------------------------------------------")
+
+                

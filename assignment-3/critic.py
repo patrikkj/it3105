@@ -123,24 +123,30 @@ class CriticNetwork(Critic):
 
     def __call__(self, state):
         """Returns the critics' evaluation of a given state."""
-        
+        """
+
         indices = np.asarray(state).nonzero()[0]
         weights = self.model.layers[0].get_weights()[0]
         weights = np.asarray([weight for sublist in weights for weight in sublist])
         test =tf.convert_to_tensor(np.sum(weights[list(indices)]))
-        print("-----------------------------------------")
+        #print("-----------------------------------------")
 
-        print("dot product tensor:", tf.reshape(test, shape=(1, -1)))
-        return tf.reshape(test, shape=(1, -1))
+        #print("dot product tensor:", tf.reshape(test, shape=(1, -1)))
+        #return tf.reshape(test, shape=(1, -1))
         
-        
+        """
         #return tf.convert_to_tensor(np.sum(weights[list(indices)]))
         
         
         tensor = tf.convert_to_tensor(state)
         reshaped = tf.reshape(tensor, shape=(1, -1))
         answer = self.model(reshaped)
-        print("ANSWER: ", answer)
+        #print("ANSWER: ", answer)
+        #if answer > 0:
+            #print("##########################################################################################")
+            #print("\n\n\n\n\n\n")
+            #print("##########################################################################################")
+
         return answer
 
     def _build_model(self):
@@ -163,13 +169,12 @@ class CriticNetwork(Critic):
         with tf.GradientTape() as tape:
             value = self(state)
             #TESTING
-            #print("-----------------------------------------")
-            print("ELIG VALUE: ",value)
+            #print("ELIG VALUE: ",value)
         gradients = tape.gradient(value, self.model.trainable_weights)
 
         # Applies the eligibility update rule for Semi-Gradient Descent with TD.
         self.eligibility = [e * self.discount_rate * self.decay_rate for e in self.eligibility]
-        print("UPDATE ELIG")
+        #print("UPDATE ELIG")
         self.eligibility = [e + dW for e, dW in zip(self.eligibility, gradients)]
 
     def update_weights(self, error):
