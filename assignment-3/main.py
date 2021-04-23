@@ -30,7 +30,7 @@ config = {
         "n_tilings": 8,
         "displacement_vector":[1,2]
     },
-    "n_episodes": 200,
+    "n_episodes": 5,
     "reset_on_explore": True,
 
     "visualize_episodes": [-1],
@@ -48,12 +48,12 @@ config = {
         "alpha": 0.1,
         "decay_rate": 0.99,
         "discount_rate": 0.99,
-        "epsilon": 0,
+        "epsilon": 0.3,
         "epsilon_min": 0.01,
         "epsilon_decay": 0.99
     }
 
-    }  
+    }  ''
 """
 # Read/write configuration file
 if mode == "read":
@@ -62,7 +62,7 @@ elif mode == "write":
     utils.write_config(config, case)
 """
 
-#@debug
+@debug
 def main():
 
     # Unpack configuration
@@ -92,7 +92,7 @@ def main():
     critic = Critic.from_type(
         critic_type, env, **critic_params, reset_on_explore=reset_on_explore
     )
-    actor = Actor(**actor_params, reset_on_explore=reset_on_explore)
+    actor = Actor(critic, env, **actor_params, reset_on_explore=reset_on_explore)
     agent = ActorCriticAgent(env, actor, critic)
     agent.set_callbacks(
         on_episode_begin=[logger.step_logger],
@@ -119,3 +119,4 @@ def main():
     
 
 main()  
+ 

@@ -95,13 +95,13 @@ class AnimateMC():
         
         # ADD action (get from actor)
         state = self.mc.decode_state(*self.mc.get_observation())
-        action = self.actor(state, self.mc.get_legal_actions(), training=False)[0]
+        action = self.actor(state, *self.mc.get_observation(), training=False)[0]
         print("-------------------------------")
         print("ACTOR suggested action:", action)
         print("-------------------------------")
         
         
-        action = self.mc.random_action()
+        #action = self.mc.random_action()
         self.mc.apply_action(action)
         angle = self.find_angle(self.mc.x)
         self.car.angle = angle

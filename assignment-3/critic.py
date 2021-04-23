@@ -20,11 +20,14 @@ class Critic:
         self.reset_on_explore = reset_on_explore
     
     def td_error(self, reward, state, state_next):
+        print(f"            Calculating td_error for reward {reward}")
         """
         Returns the temporal difference (TD) error.
              𝛿 = rₜ₊₁ + γ * Vθ(sₜ₊₁) − Vθ(sₜ)
         """
-        return reward + self.discount_rate * self(state_next) - self(state)
+        td_error = reward + self.discount_rate * self(state_next) - self(state)
+        print(f"            td_error: {td_error}")
+        return td_error
 
     @abstractmethod
     def __call__(self, state):
@@ -126,7 +129,7 @@ class CriticNetwork(Critic):
         """
 
         indices = np.asarray(state).nonzero()[0]
-        weights = self.model.layers[0].get_weights()[0]
+        weights = self.model.layers[0].get_weights()[0] 
         weights = np.asarray([weight for sublist in weights for weight in sublist])
         test =tf.convert_to_tensor(np.sum(weights[list(indices)]))
         #print("-----------------------------------------")
@@ -141,11 +144,7 @@ class CriticNetwork(Critic):
         tensor = tf.convert_to_tensor(state)
         reshaped = tf.reshape(tensor, shape=(1, -1))
         answer = self.model(reshaped)
-        #print("ANSWER: ", answer)
-        #if answer > 0:
-            #print("##########################################################################################")
-            #print("\n\n\n\n\n\n")
-            #print("##########################################################################################")
+        print("            ANSWER: ", answer, "\n")
 
         return answer
 

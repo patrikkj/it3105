@@ -57,6 +57,7 @@ class ActorCriticAgent:
         return self.run(num_episodes, training=False)
         
     def episode(self, training=True): 
+        print("enter episode",self._episode)
         # Reset eilgibilities for actor and critic
         self.actor.reset_eligibility()
         self.critic.reset_eligibility()
@@ -66,21 +67,27 @@ class ActorCriticAgent:
         self.env.reset()
         obs = self.env.get_observation()
         state = self.env.decode_state(*obs)
-        action, is_exploring, state_val = self.actor(state, self.env.get_legal_actions(), training=training)
+        action, is_exploring, state_val = self.actor(state, *obs, training=training)
         sap = SAP(state, action)
 
         self._step = 1
         while not self.env.is_finished():
+            print(f"Step {self._step} of episode {self._episode}")
             # Apply action to environment
             obs, reward, is_terminal = self.env.apply_action(sap.action)
             state = self.env.decode_state(*obs)
             # Evaluate state and action using actor and critic
             if not is_terminal:
-                action, is_exploring, state_val = self.actor(state, self.env.get_legal_actions(), training=training)
+                #TESTING
+                print(f"    Getting actor action, state_val for x,v = {obs[0]}, {obs[1]}")
+                action, is_exploring, state_val = self.actor(state, *obs, training=training)
             error = self.critic.td_error(reward, sap.state, state)
 
             # Update weights & eligibilities
-            self.actor.update(sap, error, is_exploring)
+            #TESTING
+            #self.actor.update(sap, error, is_exploring)
+            print("------------------------------------------------")
+            print("     Update critic with error:", error)
             self.critic.update(sap.state, error, is_exploring)
 
             # Create sap for next iteration
@@ -108,17 +115,16 @@ class ActorCriticAgent:
         for v in v_vals:
             row = []
             for x in x_vals:
-                #print("Heatmap x,v:", x,v,)                
-                #TESTING
-                if x == 0.16363636363636358:
-                    print("yiha")
+            
 
 
                 state = self.env.decode_state(x,v)
-                action, is_finished, state_val = self.actor(state, [-1,0,1], training=False)
-                if not (isinstance(state_val, float) or isinstance(state_val, int)):
-                    state_val = float(state_val.numpy()[0][0])
+                action, is_finished, state_val = self.actor(state, x, v, training=False)
+                #TESTING
+                #if not (isinstance(state_val, float) or isinstance(state_val, int)):
                     #print(type(state_val),state_val)
+
+                    #state_val = float(state_val.numpy()[0][0])
                 row.append(state_val)
             heatmap_data.append(row)
         sns.set_theme()
