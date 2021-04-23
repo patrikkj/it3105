@@ -25,8 +25,8 @@ class MountainCar():
         #print("ACTION:", action, "      (from mc.apply_action())")
         #print("----------------------------------------------------------")
 
-        self.next_v(action)
-        self.next_x()
+        self.v = self.next_v(self.x, self.v, action)
+        self.x = self.next_x(self.x, self.v)
         self.step +=1
         self.last_action = action
         reward = MountainCar.REWARD_ACTION
@@ -49,19 +49,19 @@ class MountainCar():
     def get_observation(self):
         return (self.x, self.v)
 
-    def next_v(self, action):
-        next_v =  self.v + 0.001 * int(action) - 0.0025 * math.cos(3 * self.x)
+    def next_v(self, x, v, action):
+        next_v =  v + 0.001 * int(action) - 0.0025 * math.cos(3 * x)
         if next_v > 0:
-            self.v = min(next_v, self.v_range[1])
+            return min(next_v, self.v_range[1])
         else: 
-            self.v =  max(next_v, self.v_range[0])
+            return max(next_v, self.v_range[0])
 
-    def next_x(self):
-        next_x =  self.x + self.v
+    def next_x(self, x, v):
+        next_x =  x + v
         if next_x > 0 :
-            self.x = min(next_x, self.x_range[1])
+            return min(next_x, self.x_range[1])
         else: 
-            self.x = max(next_x, self.x_range[0])
+            return max(next_x, self.x_range[0])
 
     def is_finished(self):
         return self.is_timeout() or self.is_completed()
