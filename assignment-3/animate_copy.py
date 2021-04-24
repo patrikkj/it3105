@@ -133,7 +133,7 @@ class AnimateMC2():
             return 
         
         # ADD action (get from actor)
-        state = self.mc.decode_state(*self.mc.get_observation())
+        state, indices = self.mc.decode_state(*self.mc.get_observation())
         action = self.actor(state, self.mc.get_legal_actions(), training=False)[0]
         print("-------------------------------")
         print("ACTOR suggested action:", action)

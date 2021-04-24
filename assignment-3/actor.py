@@ -52,7 +52,7 @@ class Actor:
         self._current_epsilon = max(self.epsilon * self.epsilon_decay ** self.episode, self.epsilon_min)
         if (np.random.random() < self._current_epsilon) and training:
             action = legal_actions[np.random.choice(len(legal_actions))]
-            print("                              ** RANDOM MOVE **")
+            #print("                              ** RANDOM MOVE **")
             return action, True , 0
         else:
             #action = np.random.choice(saps, weights=[self.policy[sap] for sap in saps]).action
@@ -62,22 +62,22 @@ class Actor:
             #return sap2.action, False, self.policy.get(sap2, 0)
 
             max_val = np.NINF
-            best_action = -3
+            best_action = None
             #evaluations = []
             for sap in saps:
                                 
                 next_v = self.env.next_v(x,v, sap.action)
                 next_x = self.env.next_x(x, next_v)
-                print(f"                 Simulating action: {sap.action}")
-                print(f"                 x: {x},           v: {v}")
-                print(f"            next_x: {next_x},       next_v: {next_v}")
+                #print(f"                 Simulating action: {sap.action}")
+                #print(f"                 x: {x},           v: {v}")
+                #print(f"            next_x: {next_x},       next_v: {next_v}")
                 #TESTING
                 #if self.env.step > 10:
                     #print("go here")
-                decoded_state = self.env.decode_state(next_x, next_v)
+                decoded_state, indices = self.env.decode_state(next_x, next_v)
                 #print("NUMBER OF 1's in decoded_state vector:", np.sum(decoded_state))
-                #print(self.critic(decoded_state))
-                evaluation = self.critic(decoded_state).numpy()[0][0]
+                #print(self.critic(decoded_state,indices))
+                evaluation = self.critic.evaluate(decoded_state, indices).numpy()[0][0]
                 if evaluation > max_val:
                     max_val = evaluation
                     best_action = sap.action
@@ -91,6 +91,7 @@ class Actor:
     def set_episode(self, episode):
         self.episode = episode
 
+    """
     def reset_eligibility(self):
         self.eligibility = {}
 
@@ -102,9 +103,10 @@ class Actor:
     def update_policy(self, error):
         for sap, elig in self.eligibility.items():
             self.policy[sap] += self.alpha * error * elig
-
+   
     def update(self, sap, error, is_exploring):
         if is_exploring and self.reset_on_explore:
             self.reset_eligibility()
         self.update_eligibility(sap)
         self.update_policy(error)
+    """

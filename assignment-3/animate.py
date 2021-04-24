@@ -45,15 +45,22 @@ class AnimateMC():
 
 
 
-        """
-        self.car_img = mpimg.imread("assignment-3/mountain_car_img.png")
-        self.imagebox = OffsetImage(self.car_img, zoom=0.05)
-        self.ab = AnnotationBbox(self.imagebox, (0.0,0.0), frameon=False)
-        print(dir(self.ab))
-        self.ax.add_artist(self.ab)
+        
+        #self.car_img = mpimg.imread("assignment-3/mountain_car_img.png")
+
+
+
+
+
+        #self.imagebox = OffsetImage(self.car_img, zoom=0.2)
+        #self.ab = AnnotationBbox(self.imagebox, (0.0,0.0), frameon=False)
+        #self.ab = OffsetBox((self.imagebox, (0.0,0.0)))
+
+        #print(dir(self.ab))
+        #self.ax.add_artist(self.ab)
         #self.imagebox.
 
-        """
+        
 
 
 
@@ -75,7 +82,7 @@ class AnimateMC():
         self.car.set_clip_box(self.ax.bbox)
         self.car.set_facecolor([0.85275809, 0.37355041, 0.32941859])
         print(f"Initial animation:l x: {self.mc.x}, v: {self.mc.v}")
-        self.ani = FuncAnimation(self.fig, self.animate, frames = 1, interval = 6.25, blit=False, init_func=self.init)
+        self.ani = FuncAnimation(self.fig, self.animate, frames = 1, interval = 3, blit=False, init_func=self.init)
         plt.show()
 
     # Function that will be called to update each frame in animation
@@ -94,7 +101,7 @@ class AnimateMC():
             return 
         
         # ADD action (get from actor)
-        state = self.mc.decode_state(*self.mc.get_observation())
+        state, indices = self.mc.decode_state(*self.mc.get_observation())
         action = self.actor(state, *self.mc.get_observation(), training=False)[0]
         print("-------------------------------")
         print("ACTOR suggested action:", action)
@@ -111,7 +118,7 @@ class AnimateMC():
         #self.ab.set_transform(trans)
 
         #self.ab.xybox = self.offset_figure(self.mc.x,angle)
-        
+        #self.ab.angle = angle
         
         
         # self.ab.set_center((0.5,0.5))

@@ -57,40 +57,41 @@ class ActorCriticAgent:
         return self.run(num_episodes, training=False)
         
     def episode(self, training=True): 
-        print("enter episode",self._episode)
+        #print("enter episode",self._episode)
+        
         # Reset eilgibilities for actor and critic
-        self.actor.reset_eligibility()
+        #self.actor.reset_eligibility()
         self.critic.reset_eligibility()
         self.actor.set_episode(self._episode)
 
         # Initialize environment and fetch initial state
         self.env.reset()
         obs = self.env.get_observation()
-        state = self.env.decode_state(*obs)
+        state,indices = self.env.decode_state(*obs)
         action, is_exploring, state_val = self.actor(state, *obs, training=training)
         sap = SAP(state, action)
 
         self._step = 1
         while not self.env.is_finished():
-            print(f"Step {self._step} of episode {self._episode}")
+            #print(f"Step {self._step} of episode {self._episode}")
             # Apply action to environment
             obs, reward, is_terminal = self.env.apply_action(sap.action)
-            state = self.env.decode_state(*obs)
+            state, indices = self.env.decode_state(*obs)
             # Evaluate state and action using actor and critic
             if not is_terminal:
                 #TESTING
-                print(f"    Getting actor action, state_val for x,v = {obs[0]}, {obs[1]}")
+                #print(f"    Getting actor action, state_val for x,v = {obs[0]}, {obs[1]}")
                 action, is_exploring, state_val = self.actor(state, *obs, training=training)
             
-            print("                 ------------------------------------------------")
-            error = self.critic.td_error(reward, sap.state, state)
+            #print("                 ------------------------------------------------")
+            error = self.critic.td_error(reward, sap.state, self.env.get_indices(sap.state), state, indices)
 
             # Update weights & eligibilities
             #TESTING
             #self.actor.update(sap, error, is_exploring)
-            print("                 ------------------------------------------------")
-            print("     Update critic with error:", error)
-            self.critic.update(sap.state, error, is_exploring)
+            #print("                 ------------------------------------------------")
+            #print("     Update critic with error:", error)
+            self.critic.update(sap.state, indices, error, is_exploring)
 
             # Create sap for next iteration
             sap = SAP(state, action)
@@ -99,7 +100,7 @@ class ActorCriticAgent:
             for callback in self.on_step_end:
                 callback(self, self._episode, self._step)
             self._step += 1
-            print("-----------------------------------------------------------------------------------------------")
+            #print("-----------------------------------------------------------------------------------------------")
 
         # Used for logging
         self._training = training
@@ -122,7 +123,7 @@ class ActorCriticAgent:
             
 
 
-                state = self.env.decode_state(x,v)
+                state, indices = self.env.decode_state(x,v)
                 action, is_finished, state_val = self.actor(state, x, v, training=False)
                 #TESTING
                 #if not (isinstance(state_val, float) or isinstance(state_val, int)):
@@ -148,7 +149,7 @@ class ActorCriticAgent:
                 y_val = None
             x_axis.append(x_val)
             y_axis.append(y_val)
-        print("X vals", x_vals)
+        #print("X vals", x_vals)
         ax = sns.heatmap(heatmap_data, xticklabels=x_axis, yticklabels=y_axis)
         plt.show()
 

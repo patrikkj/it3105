@@ -19,14 +19,16 @@ class Critic:
         self.discount_rate = discount_rate
         self.reset_on_explore = reset_on_explore
     
-    def td_error(self, reward, state, state_next):
-        print(f"            Calculating td_error for reward {reward}")
+    def td_error(self, reward, state, indices, state_next, next_indices):
+        #print(f"            Calculating td_error for reward {reward}")
         """
         Returns the temporal difference (TD) error.
              𝛿 = rₜ₊₁ + γ * Vθ(sₜ₊₁) − Vθ(sₜ)
         """
-        td_error = reward + self.discount_rate * self(state_next) - self(state)
-        print(f"            td_error: {td_error}")
+        #td_error = reward + self.discount_rate * self(state_next) - self(state)
+        td_error = reward + self.discount_rate * self.evaluate(state_next,next_indices) - self.evaluate(state,indices)
+
+        #print(f"            td_error: {td_error}")
         return td_error
 
     @abstractmethod
@@ -38,7 +40,7 @@ class Critic:
         ...
 
     @abstractmethod
-    def update_eligibility(self, state):
+    def update_eligibility(self, state, indices):
         ...
 
     @abstractmethod
@@ -85,7 +87,7 @@ class CriticTable(Critic):
     def reset_eligibility(self):
         self.eligibility = {}
 
-    def update_eligibility(self, state):
+    def update_eligibility(self, state, indices):
         for state_, value in self.eligibility.items():
             self.eligibility[state_] = self.discount_rate * self.decay_rate * value
         self.eligibility[state] = 1
@@ -94,10 +96,10 @@ class CriticTable(Critic):
         for state, value in self.eligibility.items():
             self.V[state] += value * self.alpha * error
 
-    def update(self, state, error, is_exploring):
+    def update(self, state, indices, error, is_exploring):
         if is_exploring and self.reset_on_explore:
             self.reset_eligibility()
-        self.update_eligibility(state)
+        self.update_eligibility(state, indices)
         self.update_weights(error)
 
 
@@ -124,38 +126,38 @@ class CriticNetwork(Critic):
         self.model = self._build_model()
         self.eligibility = [tf.Variable(tf.zeros_like(weights)) for weights in self.model.trainable_weights]
 
-    def __call__(self, state):
-        """Returns the critics' evaluation of a given state."""
-        """
 
-        indices = np.asarray(state).nonzero()[0]
-        weights = self.model.layers[0].get_weights()[0] 
-        weights = np.asarray([weight for sublist in weights for weight in sublist])
-        test =tf.convert_to_tensor(np.sum(weights[list(indices)]))
+    def evaluate(self,state,indices):
+        #TESTING
+        #indices = np.asarray(state).nonzero()[0]
+        weights = self.model.layers[0].get_weights()[0].flatten()
+        #weights = np.asarray([weight for sublist in weights for weight in sublist])
+        tensor =tf.convert_to_tensor(np.sum(weights[indices]))
         #print("-----------------------------------------")
-
-        #print("dot product tensor:", tf.reshape(test, shape=(1, -1)))
-        #return tf.reshape(test, shape=(1, -1))
+        #print("             dot product tensor:", tf.reshape(test, shape=(1, -1)))
+        return tf.reshape(tensor, shape=(1, -1))
         
-        """
         #return tf.convert_to_tensor(np.sum(weights[list(indices)]))
         
+
+    def __call__(self, state):
+        """Returns the critics' evaluation of a given state."""
         
         tensor = tf.convert_to_tensor(state)
         reshaped = tf.reshape(tensor, shape=(1, -1))
         answer = self.model(reshaped)
-        print("            ANSWER: ", answer, "\n")
+        #print("            ANSWER: ", answer, "\n")
 
         return answer
 
     def _build_model(self):
         """Builds the Keras mudel used as a state-value approximator."""
         model = tf.keras.Sequential()
-        input_spec = len(self.env.decode_state(*self.env.get_observation()))
+        input_spec = len(self.env.decode_state(*self.env.get_observation())[0])
         model.add(tf.keras.layers.Input(shape=(input_spec, )))
         for units in self.layer_dims:
             model.add(tf.keras.layers.Dense(units, activation="relu"))
-        model.add(tf.keras.layers.Dense(1,activation="relu"))    
+        model.add(tf.keras.layers.Dense(1,activation="linear",use_bias=False))    
         optimizer = tf.keras.optimizers.SGD(learning_rate=self.alpha)
         model.compile(optimizer=optimizer, loss="mse")
         return model
@@ -163,7 +165,7 @@ class CriticNetwork(Critic):
     def reset_eligibility(self):
         self.eligibility = [tf.Variable(tf.zeros_like(weights)) for weights in self.model.trainable_weights]
 
-    def update_eligibility(self, state):
+    def update_eligibility(self, state, indices):
         # Wraps tf.ops to record operations such that gradients can be calculated
         with tf.GradientTape() as tape:
             value = self(state)
@@ -182,12 +184,13 @@ class CriticNetwork(Critic):
             w = w + learning_rate * error * e
         """
         weights = self.model.trainable_weights
+        #TESTING
         error = tf.reshape(-error, -1)
         weight_update = [error * e for e in self.eligibility]
         self.model.optimizer.apply_gradients(zip(weight_update, weights))
 
-    def update(self, state, error, is_exploring):
+    def update(self, state, indices,error, is_exploring):
         if is_exploring and self.reset_on_explore:
             self.reset_eligibility()
-        self.update_eligibility(state)
+        self.update_eligibility(state, indices)
         self.update_weights(error)

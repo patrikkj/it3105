@@ -9,7 +9,6 @@ class MountainCar():
     def __init__(self, x_range=[-1.2,0.6], v_range= [-0.07,0.07], max_steps=1000):
         self.actions = [-1,0,1]
         self.x_range = x_range
-        print("INITINITIINIT x_range:", self.x_range)
         self.v_range = v_range
         self.x = self.initial_x()
         self.v = 0
@@ -31,16 +30,6 @@ class MountainCar():
         self.last_action = action
         reward = MountainCar.REWARD_ACTION
         if self.is_completed(): 
-            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
-            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
-            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
-            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
-            print(f"(x,v): ({self.x},{self.v}, range: {self.x_range}")
-            print("\n\n\n\n\n\n\\n\n\n\n\n\n\n")
-            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
-            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
-            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
-            print("ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ")
             reward = MountainCar.REWARD_WIN
         #print("Step: ", self.step, "  of " , self.max_steps)
         self.check_best()
@@ -157,7 +146,7 @@ class MountainCar():
         #state = 0
         n_features = np.prod(self.total_tiles) * self.n_tilings
         state = np.zeros(n_features, dtype=int)
-
+        indices = []
         for i in range(self.n_tilings):
             
             #TESTING
@@ -192,11 +181,14 @@ class MountainCar():
                 print(self.total_tiles)
             #print("INDEX" , index)
             state[index] = 1
+            indices.append(index)
 
             #print ("Tiling %s: (%s,%s)" % (i, x_tile, v_tile))
 
-        return tuple(state)
+        return (state,indices)
 
+    def get_indices(self,state):
+        return np.asarray(state).nonzero()[0]
 
     def print_tiling_info(self):
         print ("-----------------------------------------------------")
