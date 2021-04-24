@@ -52,6 +52,7 @@ class Actor:
         self._current_epsilon = max(self.epsilon * self.epsilon_decay ** self.episode, self.epsilon_min)
         if (np.random.random() < self._current_epsilon) and training:
             action = legal_actions[np.random.choice(len(legal_actions))]
+            print("                              ** RANDOM MOVE **")
             return action, True , 0
         else:
             #action = np.random.choice(saps, weights=[self.policy[sap] for sap in saps]).action

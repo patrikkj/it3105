@@ -81,12 +81,14 @@ class ActorCriticAgent:
                 #TESTING
                 print(f"    Getting actor action, state_val for x,v = {obs[0]}, {obs[1]}")
                 action, is_exploring, state_val = self.actor(state, *obs, training=training)
+            
+            print("                 ------------------------------------------------")
             error = self.critic.td_error(reward, sap.state, state)
 
             # Update weights & eligibilities
             #TESTING
             #self.actor.update(sap, error, is_exploring)
-            print("------------------------------------------------")
+            print("                 ------------------------------------------------")
             print("     Update critic with error:", error)
             self.critic.update(sap.state, error, is_exploring)
 
@@ -97,9 +99,11 @@ class ActorCriticAgent:
             for callback in self.on_step_end:
                 callback(self, self._episode, self._step)
             self._step += 1
+            print("-----------------------------------------------------------------------------------------------")
 
         # Used for logging
         self._training = training
+        
 
     def show_best_x(self):
         plt.plot([ep["best_x"][1] for ep in self._episode_results])

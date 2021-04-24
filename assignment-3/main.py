@@ -30,7 +30,7 @@ config = {
         "n_tilings": 8,
         "displacement_vector":[1,2]
     },
-    "n_episodes": 5,
+    "n_episodes": 10,
     "reset_on_explore": True,
 
     "visualize_episodes": [-1],
@@ -40,7 +40,7 @@ config = {
 
     "critic_params": {
         "layer_dims": (),                # Ignored if not using Network critc
-        "alpha": 0.01,                   # 1e-2 for Network, 0.3 for table
+        "alpha": 0.000000001,                   # 1e-2 for Network, 0.3 for table
         "decay_rate": 0.99,
         "discount_rate": 0.99,
     },
@@ -48,12 +48,12 @@ config = {
         "alpha": 0.1,
         "decay_rate": 0.99,
         "discount_rate": 0.99,
-        "epsilon": 0.3,
+        "epsilon": 0,
         "epsilon_min": 0.01,
         "epsilon_decay": 0.99
     }
 
-    }  ''
+    }  
 """
 # Read/write configuration file
 if mode == "read":

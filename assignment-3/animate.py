@@ -175,7 +175,6 @@ class AnimateMC():
 
     def find_angle(self, x):
         delta =  self.d
-        #return 30
         slope = (self.get_y(x)- self.get_y(x-delta))/delta
         return math.atan(slope)/(2*math.pi)*360
 
