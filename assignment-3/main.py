@@ -30,7 +30,7 @@ config = {
         "n_tilings": 8,
         "displacement_vector":[1,2]
     },
-    "n_episodes": 20,
+    "n_episodes": 10,
     "reset_on_explore": True,
 
     "visualize_episodes": [-1],
@@ -62,7 +62,7 @@ elif mode == "write":
     utils.write_config(config, case)
 """
 
-@debug
+#@debug
 def main():
 
     # Unpack configuration
